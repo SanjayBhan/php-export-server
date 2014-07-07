@@ -1,6 +1,6 @@
 <?php 
 date_default_timezone_set('Asia/Kolkata');
-$host = "fcexportserverdb.c8pz2y7jvnmz.us-east-1.rds.amazonaws.com" ;
+$host = "localhost" ;
 $user = "exportserveruser";
 $pass = "IQ8Lw5UlZE7b";
 $db = "exportserverdb";
