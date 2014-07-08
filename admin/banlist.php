@@ -44,7 +44,7 @@
 
 <?php 
 	$selectRules = "select * from ipRules";
-	$selectRes = mysqli_query($selectRules);
+	$selectRes = mysql_query($selectRules);
 ?>
 <a href="addRule.php" class="btn btn-primary fancy-add">Add</a>
 <div class="table-holder">
@@ -57,9 +57,9 @@
     <tbody>
 	
 	<?php 
-		if(mysqli_num_rows($selectRes)>0)
+		if(mysql_num_rows($selectRes)>0)
 		{
-			while($selectRows = mysqli_fetch_assoc($selectRes))
+			while($selectRows = mysql_fetch_assoc($selectRes))
 			{
 	?>
 			<tr><td><?php echo $selectRows['ip'];?></td><td><?php echo $selectRows['userAdded'];?></td><td><?php echo $selectRows['dateAdded'];?></td><td><?php echo $selectRows['reason'];?></td><td><a href="editRule.php?id=<?php echo $selectRows['id']; ?>" class="btn btn-mini fancy-add" alt=""><i class="icon-edit"></i> EDIT</a></td><td><input type="checkbox" class="checkbox" name="selectDelete" id = "<?php echo $selectRows['id'];?>"/></td></tr>

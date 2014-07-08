@@ -16,7 +16,7 @@
 		else 
 		{
 			$insertStatement = "insert into exportServerDb.ipRules (ip,accessRule,dateAdded,reason) values ('".$ip ."','Denied',convert_tz(now(), 'GMT', 'Asia/Kolkata'),'".$reason."')";
-			if(mysqli_query($insertStatement))
+			if(mysql_query($insertStatement))
 			{
 				writeHtaccess();
 				showForm("Add", "Added Successfully!");
@@ -34,7 +34,7 @@
 		/*else  if(trim(addslashes($_POST["id"]))!="")
 		{
 			$editStatement = "update exportServerDb.ipRules  set ip = '".$ip ."',reason = '".$reason."' where id=".$_POST["id"];
-			if(mysqli_query($editStatement))
+			if(mysql_query($editStatement))
 			{
 				showForm("Edit", "Edited Successfully!");
 			?>
