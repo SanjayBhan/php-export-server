@@ -26,7 +26,7 @@ include('writehtaccess.php');
 		
 		
 		
-		if(mysql_query($delQuery))
+		if(mysqli_query($delQuery))
 		{
 			writeHtaccess();
 			echo 1;

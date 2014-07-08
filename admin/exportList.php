@@ -43,7 +43,7 @@
 <div class="span9">
 <?php 
 	$selectRules = "select * from exportData";
-	$selectRes = mysql_query($selectRules);
+	$selectRes = mysqli_query($selectRules);
 ?>
 
 <div class="table-holder">
@@ -68,9 +68,9 @@
     <tbody>
 	
 	<?php 
-		if(mysql_num_rows($selectRes)>0)
+		if(mysqli_num_rows($selectRes)>0)
 		{
-			while($selectRows = mysql_fetch_assoc($selectRes))
+			while($selectRows = mysqli_fetch_assoc($selectRes))
 			{
 	?>
 			<tr>

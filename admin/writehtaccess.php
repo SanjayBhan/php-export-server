@@ -6,14 +6,14 @@ include('includes/config.php');
  {
 	$ipArray = array();
 	$selectQry = "select ip from ipRules";
-	$selectRes = mysql_query($selectQry);
+	$selectRes = mysqli_query($selectQry);
 	$i = 0;
 	$string  = "Order Deny,Allow\n";
 	$file = '../.htaccess';
-	if(mysql_num_rows($selectRes)>0)
+	if(mysqli_num_rows($selectRes)>0)
 	{
 		
-		while($selectRow =mysql_fetch_assoc($selectRes))
+		while($selectRow =mysqli_fetch_assoc($selectRes))
 		{
 			// do nothing 
 			//$ipArray[$i] = $selectRow['ip'];
