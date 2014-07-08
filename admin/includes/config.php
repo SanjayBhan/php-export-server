@@ -1,6 +1,4 @@
 <?php
-//Hide the PHP warnings
-error_reporting(E_ERROR | E_PARSE);
 
 date_default_timezone_set('Asia/Kolkata');
 $host = "localhost" ;
