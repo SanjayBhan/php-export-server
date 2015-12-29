@@ -141,7 +141,46 @@ define('CONVERT_PATH', '/usr/bin/convert'); // imagemagic
 // =============================================================================
 // ==                             Public Functions                            ==
 // =============================================================================
+class stitchImageCallback {
+   private $imageData;
 
+   function __construct($imageData) {
+       $this->imageData = $imageData;
+   }
+
+   public function callback($matches) {
+       $imageRet = '';
+       $imageName = explode('/', $matches['2']);
+       $imageName = array_pop($imageName);
+
+       foreach ($this->imageData as $key => $value) {
+           if ($value->name .'.'.$value->type == $imageName) {
+               $imageRet = $value->encodedData;
+           }
+       }
+       if ($imageRet == '') {
+           return '';
+       }
+       return $matches[1] . $imageRet;
+   }
+}
+
+/**
+* The function is use to stitch the image to the SVG when downloaded as SVG
+* @param  [string] $svg       [SVG with image link]
+* @param  [array] $imageData [Image datauri array]
+* @return [string]            [SVG with imageDatauri]
+*/
+function stitchImageToSvg ($svg, $imageData) {
+   if($imageData != null) {
+        $imageData = json_decode($imageData);
+        $callback = new stitchImageCallback($imageData);
+        return preg_replace_callback("/(<image[^>]*xlink:href *= *[\"']?)([^\"']*)/i", array($callback, 'callback'), $svg);
+   } else {
+        return $svg;
+   }
+
+}
 /**
  *  Gets Export data from FCExporter - main module and build the export binary/objct.
  *  @param	$stream 	(string) export image data in FusionCharts compressed format
@@ -149,7 +188,7 @@ define('CONVERT_PATH', '/usr/bin/convert'); // imagemagic
  *              $exportParams   {array} Export related parameters
  *  @return 			image object/binary
  */
-function exportProcessor($stream, $meta, $exportParams) {
+function exportProcessor($stream, $meta, $exportParams, $imageData=null) {
 
     // get mime type list parsing MIMETYPES constant declared in Export Resource PHP file
     $ext = strtolower($exportParams["exportformat"]);
@@ -224,6 +263,17 @@ function exportProcessor($stream, $meta, $exportParams) {
             $return_binary = file_get_contents($tempOutputFile);
         }
 
+        // delete temp internal image files if exist
+        $imageData = json_decode($imageData);
+        if ($imageData) {
+            foreach ($imageData as $key => $value) {
+                $tempInternalImage = realpath(TEMP_PATH) . "/{$value->name}.{$value->type}";
+                if (file_exists($tempInternalImage)) {
+                    unlink($tempInternalImage);
+                }
+            }
+        }
+
         // delete temp files
         if (file_exists($tempInputSVGFile)) {
             unlink($tempInputSVGFile);
@@ -237,6 +287,7 @@ function exportProcessor($stream, $meta, $exportParams) {
 
         // SVG can be streamed back directly
     } else if ($ext == 'svg') {
+        $stream = stitchImageToSvg($stream, $imageData);
         $return_binary = $stream;
     } else {
         raise_error("Invalid Export Format.", true);
