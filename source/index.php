@@ -261,8 +261,7 @@ function convertRawImageDataToFile($exportData) {
     $handle = fopen($fileName, "rb");
     $fsize = filesize($fileName);
     $contents = fread($handle, $fsize);
-    $byteArray = unpack("N*",$contents);
-    print_r($byteArray);
+    print_r($contents);
     exit;
 }
 
