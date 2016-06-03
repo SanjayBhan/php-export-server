@@ -242,8 +242,6 @@ $exportRequestStream = $_POST;
 $exportData = parseExportRequestStream($exportRequestStream);
 
 function convertRawImageDataToFile($exportData) {
-    $fileName = "temp/".$exportData['parameters']['exportfilename'].".".strtolower($exportData['parameters']['exportformat']);
-    file_put_contents($fileName, $exportData['stream']);
     $mimeTypeArray = ["jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml"];
     $mime = "";
     foreach($mimeTypeArray as $mime) {
@@ -251,17 +249,22 @@ function convertRawImageDataToFile($exportData) {
             break;
         }
     }
-    header('Content-type:' . $mime);
-    header('Content-Disposition: attachment; filename="' . $fileName . '"');
-    header('Expires: 0');
-    header('Cache-Control: must-revalidate');
-    header('Pragma: public');
-    ob_clean();
-    ob_end_flush();
-    $handle = fopen($fileName, "rb");
-    $fsize = filesize($fileName);
-    $contents = fread($handle, $fsize);
-    print_r($contents);
+    if (strtolower($exportData['parameters']['exportaction']) === 'save') {
+        $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
+        print_r($fileStatus['filepath']);
+        if ($fileStatus ['ready']) {
+            file_put_contents($fileStatus['filepath'], $exportData['stream']);
+        }
+    } else {
+        header('Content-type:' . $mime);
+        header('Content-Disposition: attachment; filename="' . $exportData["parameters"]["exportfilename"].'.'.strtolower($exportData["parameters"]["exportformat"]) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        ob_clean();
+        ob_end_flush();
+        print_r($exportData['stream']);
+    }
     exit;
 }
 
