@@ -2,8 +2,8 @@
 
 date_default_timezone_set('Asia/Kolkata');
 $host = "localhost" ;
-$user = "exportserveruser";
-$pass = "IQ8Lw5UlZE7b";
+$user = "root";
+$pass = "root";
 $db = "exportserverdb";
 $con = mysql_connect($host,$user,$pass);
 if (!$con)

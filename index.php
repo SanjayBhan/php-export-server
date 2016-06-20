@@ -1,7 +1,8 @@
 <?php
 include("sanitizer.php");
-
-// Disabling DB related actions as of now. They may interfere with main export
+// Uncomment the below line if want to save the export log in database
+// have to configure server and database from the file admin/includes/config.php
+// also uncomment the line insertToDb($exportRequestStream)
 //include("insertToDb.php");
 
 /**
@@ -236,7 +237,7 @@ $exportRequestStream = $_POST;
 //echo  "</pre>";
 
 // InsertToDB
-// Disabling insert to db as of now. It may interfere with main exporter
+// Uncomment the below line if want to save the export log in database
 //insertToDb($exportRequestStream);
 
 $exportData = parseExportRequestStream($exportRequestStream);
