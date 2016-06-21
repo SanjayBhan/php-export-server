@@ -243,7 +243,7 @@ $exportRequestStream = $_POST;
 $exportData = parseExportRequestStream($exportRequestStream);
 
 function convertRawImageDataToFile($exportData) {
-    $mimeTypeArray = ["jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml"];
+    $mimeTypeArray = array("jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml";
     $mime = "";
     foreach($mimeTypeArray as $mime) {
         if(strpos($mime, strtolower($exportData['parameters']['exportformat']))!==false) {
