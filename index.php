@@ -47,7 +47,12 @@ include("sanitizer.php");
 /**
  *  ChangeLog / Version History:
  *  ----------------------------
- *
+ *   4.0 [ 21 June 2016 ]
+ *       - Support export if direct image base64 encoded data provided (for FusionCharts v 3.11.0 or more)
+ *       - Support for download of xls format
+ *       - Export with images suppported for every format including svg if browser is capable of sending the image data
+ *         as base64 data.
+ * 
  *   3.3 [ 31 December 2012 ]
  *       - Support Export of JavaScript chart (SVG) to allowed export formats
  *         via batik-rasterizer Java library
