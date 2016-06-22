@@ -74,7 +74,7 @@ include("sanitizer.php");
  *
  */
 /**
- * Copyright (c) 2012 InfoSoft Global Private Limited. All Rights Reserved.
+ * Copyright (c) 2016 InfoSoft Global Private Limited. All Rights Reserved.
  *
  */
 /**
