@@ -20,11 +20,11 @@ include("sanitizer.php");
  *
  *    @author FusionCharts
  *    @description FusionCharts Exporter (Server-Side - PHP)
- *    @version 3.3 [ 31 December 2012 ]
+ *    @version 4.0 [ 21 June 2016 ]
  *
  */
 /**
- * Copyright (c) 2012 Infosoft Global Private Limited
+ * Copyright (c) 2016 Infosoft Global Private Limited
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
