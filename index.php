@@ -1,6 +1,10 @@
 <?php
 include("sanitizer.php");
-include("insertToDb.php");
+// Uncomment the below line if want to save the export log in database
+// have to configure server and database from the file admin/includes/config.php
+// also uncomment the line insertToDb($exportRequestStream)
+//include("insertToDb.php");
+
 /**
  *
  * FusionCharts Exporter is a PHP script that handles
@@ -16,11 +20,11 @@ include("insertToDb.php");
  *
  *    @author FusionCharts
  *    @description FusionCharts Exporter (Server-Side - PHP)
- *    @version 3.3 [ 31 December 2012 ]
+ *    @version 4.0 [ 21 June 2016 ]
  *
  */
 /**
- * Copyright (c) 2012 Infosoft Global Private Limited
+ * Copyright (c) 2016 Infosoft Global Private Limited
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +47,12 @@ include("insertToDb.php");
 /**
  *  ChangeLog / Version History:
  *  ----------------------------
- *
+ *   4.0 [ 21 June 2016 ]
+ *       - Support export if direct image base64 encoded data provided (for FusionCharts v 3.11.0 or more)
+ *       - Support for download of xls format
+ *       - Export with images suppported for every format including svg if browser is capable of sending the image data
+ *         as base64 data.
+ * 
  *   3.3 [ 31 December 2012 ]
  *       - Support Export of JavaScript chart (SVG) to allowed export formats
  *         via batik-rasterizer Java library
@@ -65,7 +74,7 @@ include("insertToDb.php");
  *
  */
 /**
- * Copyright (c) 2012 InfoSoft Global Private Limited. All Rights Reserved.
+ * Copyright (c) 2016 InfoSoft Global Private Limited. All Rights Reserved.
  *
  */
 /**
@@ -231,10 +240,59 @@ $exportRequestStream = $_POST;
 //	print_r($exportRequestStream);
 //die();
 //echo  "</pre>";
+
 // InsertToDB
-insertToDb($exportRequestStream);
+// Uncomment the below line if want to save the export log in database
+//insertToDb($exportRequestStream);
 
 $exportData = parseExportRequestStream($exportRequestStream);
+
+function convertRawImageDataToFile($exportData) {
+    $mimeTypeArray = array("jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml");
+    $mime = "";
+    foreach($mimeTypeArray as $mime) {
+        if(strpos($mime, strtolower($exportData['parameters']['exportformat']))!==false) {
+            break;
+        }
+    }
+    if (strtolower($exportData['parameters']['exportaction']) === 'save') {
+        $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
+        print_r($fileStatus['filepath']);
+        if ($fileStatus ['ready']) {
+            file_put_contents($fileStatus['filepath'], $exportData['stream']);
+        }
+    } else {
+        header('Content-type:' . $mime);
+        header('Content-Disposition: attachment; filename="' . $exportData["parameters"]["exportfilename"].'.'.strtolower($exportData["parameters"]["exportformat"]) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        ob_clean();
+        ob_end_flush();
+        print_r($exportData['stream']);
+    }
+    exit;
+}
+
+if($exportData['streamtype']==="IMAGE-DATA") {
+    $exportObject = convertRawImageDataToFile($exportData);
+}
+
+
+/**
+ * If encoded images are found we need to decode and save them in the temp folder.
+ */
+if($exportData ['encodedImageData'] && strtolower($exportData ['parameters']["exportformat"]) != 'svg' ){
+    //createEmbeddedImages($exportData ['encodedImageData']);
+    parseImageData( $exportData ['encodedImageData']);
+}
+
+/**
+ * Fix for Issue with safari when exported as pdf stroke-width="0.0001" is not supporting by inkscape
+ */
+if(strtolower($exportData ['parameters']["exportformat"]) == 'pdf') {
+    $exportData ['stream'] = preg_replace('/stroke-width\s*=\s*["\']0\.[^"\']*"/i', 'stroke-width="0"', $exportData ['stream']);
+}
 
 /**
  * Get the name of the export resource (php file) as per export format
@@ -253,7 +311,7 @@ if (!@include( $exporterResource )) {
  * Pass export stream and meta values to the export processor &
  * get back the export binary
  */
-$exportObject = exportProcessor($exportData ['stream'], $exportData ['meta'], $exportData ['parameters']);
+$exportObject = exportProcessor($exportData ['stream'], $exportData ['meta'], $exportData ['parameters'], $exportData ['encodedImageData']);
 
 
 /*
@@ -305,9 +363,18 @@ function parseExportRequestStream($exportRequestStream) {
 
     // get string of compressed/encoded image data
     // halt with error message  if stream is not found
-    $exportData ['stream'] = (string)@$exportRequestStream ['stream']
-            or $exportData ['stream'] = (string)@$exportRequestStream ['svg'] // backward compatible
-            or raise_error(100, true);
+    if( strtolower($exportData ['streamtype']) === "svg")  {
+        $exportData ['stream'] = (string)@$exportRequestStream ['stream']
+                or $exportData ['stream'] = (string)@$exportRequestStream ['svg'] // backward compatible
+                or raise_error(100, true);
+    } else {
+        if(!isset($exportRequestStream ['stream'])) {
+		    raise_error(100, true);
+	    }
+        // if stream-type is not SVG then this section will execute
+        $exportData ['stream'] = (str_replace(' ','+', $exportRequestStream ['stream']));
+        $exportData ['stream'] = base64_decode(substr($exportData ['stream'], strpos($exportData ['stream'], ",")+1));
+    }
 
     // get all export related parameters and parse to validate and process these
     // add notice if 'parameters' is not retrieved. In that case default values would be taken
@@ -332,6 +399,10 @@ function parseExportRequestStream($exportRequestStream) {
 
     // chart DOMId
     $exportData ['meta']['DOMId'] = @$exportRequestStream ['meta_DOMId'];
+
+    // get the encoded images if any And temporarily create them inside the the temp
+    // folder
+    $exportData ['encodedImageData'] = @$exportRequestStream ['encodedImgData'];
 
     // return collected and processed data
     return $exportData;
@@ -385,14 +456,138 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
     return $params;
 }
 
+/**
+ * parseImageData function parses the JSON formatted encoded image data
+ * and its associated attributes. It then decodes the base64 image string
+ * and stores in an array for image re-creation at server.
+ * @param $dataStr JSON formatted image data and its attrbutes.
+ *
+ */
+function parseImageData($dataStr){
+    $dataObj = json_decode($dataStr);
+    $images_to_save = array();
 
+    foreach ($dataObj as $key => $value) {
+        $image = $value;
+
+        foreach ($image as $key => $value) {
+
+            switch(strtolower($key)) {
+                case 'name':
+                    $img_name = $value;
+                    break;
+                case 'type':
+                    $img_type = $value;
+                    break;
+                case 'encodeddata':
+                    $img_data = $value;
+                    break;
+                case 'width':
+                    $img_width = $value;
+                    break;
+                case 'height':
+                    $img_height = $value;
+                    break;
+                default:
+                    #nothing to do
+                    break;
+            }
+        }
+
+        $img_data = str_replace('data:image/'.$img_type.";base64,", '', $img_data);
+        $img_data = str_replace(' ', '+', $img_data);
+        $img_data = base64_decode($img_data);
+
+        if(!$img_data){
+            raise_error("Problem Decoding base64 String");
+        }
+
+        $img_obj = (object)array(
+            'name' => $img_name,
+            'data' => $img_data,
+            'type' => $img_type
+        );
+
+        array_push($images_to_save, $img_obj);
+    }
+
+    if(count($images_to_save) > 0) {
+        saveNextImage($images_to_save, 0);
+    }
+}
+
+/**
+ * saveNextImage function sequentially gets the image data and
+ * send for recreating the images.
+ * @param  [type] $images  [description]
+ * @param  [type] $counter [description]
+ * @return [type]          [description]
+ */
+function saveNextImage($images, $counter) {
+    if(isset($images[$counter])){
+        $img_name = $images[$counter]->name;
+        $img_type = $images[$counter]->type;
+        $img_data = $images[$counter]->data;
+        /* Even if image creation is very fast (Synchronous), we should
+           wait for the completion of one process, before invoking the
+           other. Hence, the following if and else is required.
+        */
+        if(saveEmbeddedImage($img_name, $img_type, $img_data, "temp")) {
+            /* For successful creation of the images moves to the
+              next image*/
+            $counter++;
+            saveNextImage($images, $counter);
+        }
+        else {
+            /*and for failure raise an error and then
+            check for the next image. */
+            raise_error("can not create file ". $img_name. "." .$img);
+            $counter++;
+            saveNextImage($images, $counter);
+        };
+    }
+}
+
+/**
+ * saveEmbeddedImage takes all the required parameters to recreate the
+ * encoded image at server.
+ * @param  $name    the name of the image to be recreated
+ * @param  $type    The type of the image to be recreated
+ * @param  $data    The decoded binary data to save as the image
+ * @param  $path    The relative path of the folder where the
+ *                  image should be recreated. This is normally
+ *                  the 'temp' folder.
+ *
+ * @return          Returns true for successful recreaion and false
+ *                  for failure.
+ */
+function saveEmbeddedImage($name, $type, $data, $path="temp"){
+    $resource = imagecreatefromstring($data);
+    $image_output_path = realpath($path) . "/" . $name . "." . $type;
+
+    if(!$resource){
+        raise_error("Image resource could not be created for " . $name);
+    }else{
+        if($type == 'png'){
+            imagealphablending($resource, false);
+            imagesavealpha($resource, true);
+
+            return imagepng($resource, $image_output_path, 9);
+        }else{
+            return imagejpeg($resource, $image_output_path, 100);
+        }
+
+    }
+    //Should free up memory.
+    imagedestroy($resource);
+}
 
 /**
  *  Builds and returns a path of the Export Resource PHP file needed to
  * 	export the chart to the format specified as parameter.
  *  @param	$strFormat (string) export format specified form chart
  *  @return A path (string) containing the Export Resource PHP file
- * 			the for specified format
+ * 			for the specified format
  */
 function getExporter($strFormat, $streamtype = "RLE") {
 
@@ -437,9 +632,7 @@ function outputExportObject($exportObj, $exportParams) {
 
     // dynamically call 'setupDownload' or 'setupServer' as per export action
     // pass export paramters and get back export settings in an array
-    $exportActionSettings = call_user_func('setup' . ($isDownload ? 'Download' : 'Server'), $exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']
-    );
-
+    $exportActionSettings = call_user_func('setup' . ($isDownload ? 'Download' : 'Server'), $exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
     // check whether export setting gives a 'ready' flag to true/'download'
     // and call output handler
     // return status back (filename if success, false if not success )

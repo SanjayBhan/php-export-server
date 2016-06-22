@@ -19,7 +19,7 @@
  *
  */
 /**
- * Copyright (c) 2012 Infosoft Global Private Limited
+ * Copyright (c) 2016 Infosoft Global Private Limited
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@
  *
  */
 /**
- * Copyright (c) 2012 InfoSoft Global Private Limited. All Rights Reserved.
+ * Copyright (c) 2016 InfoSoft Global Private Limited. All Rights Reserved.
  *
  */
 /**
