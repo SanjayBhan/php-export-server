@@ -122,12 +122,12 @@
 // This constant lists the mime types related to each export format this resource handles
 // The value is semicolon separated key value pair for each format
 // Each key is the format and value is the mime type
-define( "MIMETYPES", "jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png" );
+define("MIMETYPES", "jpg=image/jpeg;jpeg=image/jpeg;gif=image/gif;png=image/png");
 
 // This constant lists all the file extensions for the export formats
 // The value is semicolon separated key value pair for each format
 // Each key is the format and value is the file extension
-define( "EXTENSIONS", "jpg=jpg;jpeg=jpg;gif=gif;png=png" );
+define("EXTENSIONS", "jpg=jpg;jpeg=jpg;gif=gif;png=png");
 
 
 // =============================================================================
