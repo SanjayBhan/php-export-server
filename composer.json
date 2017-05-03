@@ -1,13 +1,7 @@
 {
-    "name": "fusioncharts/php-export-server",
-    "description": "PHP Export Server for Fusioncharts",
+    "name": "fusioncharts/php-export-handler",
+    "description": "PHP Export Handler for Fusioncharts",
     "type": "library",
-    "authors": [
-        {
-            "name": "Jimut Dhali",
-            "email": "jemdhali67@gmail.com"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "FCExportServer\\": "src/ExportServer"
