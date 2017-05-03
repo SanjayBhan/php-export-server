@@ -1,8 +1,8 @@
 <?php
 require(__DIR__ . '/../../vendor/autoload.php');
+
 include('sanitizer.php');
 include('helpers.php');
-include('config.php');
 
 // Uncomment the below line if want to save the export log in database
 // have to configure server and database from the file admin/includes/config.php
@@ -166,7 +166,7 @@ include('config.php');
  *
  * 	For Windows servers you can ALSO use \\ as path separator too. e.g. c:\\php\\mysite\\
  */
-define("SAVE_PATH", dirname(__FILE__) . "/ExportedImages/");
+// define("SAVE_PATH", dirname(__FILE__) . "/ExportedImages/");
 
 /**
  * 	IMPORTANT: This constant HTTP_URI stores the HTTP reference to
@@ -200,7 +200,6 @@ define("MIME_TO_FORMAT", "image/jpg=jpg;image/jpeg=jpg;image/gif=gif;image/png=p
 // By default the path is "./Resources/"
 define("RESOURCE_PATH", dirname(__FILE__) . "/Resources/");
 
-
 /* ---------------------------- Export  Settings ------------------------------- */
 
 /**
@@ -214,6 +213,7 @@ define("RESOURCE_PATH", dirname(__FILE__) . "/Resources/");
 define("OVERWRITEFILE", false);
 define("INTELLIGENTFILENAMING", true);
 define("FILESUFFIXFORMAT", "TIMESTAMP"); // value can be either 'TIMESTAMP' or 'RANDOM'
+date_default_timezone_set('UTC');
 
 // Stores server notices if any as string [ to be send back to chart after save ]
 $notices = "";
@@ -232,8 +232,11 @@ $notices = "";
  * exportFileName, exportAction etc.)
  */
 $exportRequestStream = $_POST;
+
+$headers = getallheaders();
+
 // echo "<pre>";
-// 	print_r($exportRequestStream);
+// print_r($exportRequestStream);
 // die();
 // echo "</pre>";
 
@@ -241,47 +244,39 @@ $exportRequestStream = $_POST;
 // Uncomment the below line if want to save the export log in database
 //insertToDb($exportRequestStream);
 
+setLogData('chartIdentifierHash', $exportRequestStream['charttype']);
+
 $exportData = parseExportRequestStream($exportRequestStream);
 
-function convertRawImageDataToFile($exportData) {
-    $mimeTypeArray = array("jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml");
-    $mime = "";
-    foreach($mimeTypeArray as $mime) {
-        if(strpos($mime, strtolower($exportData['parameters']['exportformat']))!==false) {
-            break;
-        }
-    }
-    if (strtolower($exportData['parameters']['exportaction']) === 'save') {
-        $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
-        print_r($fileStatus['filepath']);
-        if ($fileStatus ['ready']) {
-            file_put_contents($fileStatus['filepath'], $exportData['stream']);
-        }
-    } else {
-        header('Content-type:' . $mime);
-        header('Content-Disposition: attachment; filename="' . $exportData["parameters"]["exportfilename"].'.'.strtolower($exportData["parameters"]["exportformat"]) . '"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
+$exportFilename = $exportData['parameters']['exportfilename'].'.'.strtolower($exportData['parameters']['exportformat']);
 
-        applyResponseHeaders(fcConfig('headers'));
+/**
+ * Set the default log datas
+ */
+setLogData('exportedImage', $exportFilename);
+setLogData('chartTitle', ''); // TODO: Need to integrate
+setLogData('chartOriginUrl', $headers['Origin']);
+setLogData('serverDateTime', date('Y-m-d H:i:s'));
+setLogData('userTimeZone', 'ISD'); // TODO: Need to integrate
+setLogData('userIP', $headers['Origin']); // TODO: Difference with 'chartOriginUrl'?
+setLogData('userCountry', 'India'); // TODO: Need to integrate
+setLogData('userAgent', $headers['User-Agent']);
+setLogData('languageIdentifier', 'PHP'); // TODO: Needed?
+setLogData('licenseInfo', 'MIT'); // TODO: Need to integrate
+setLogData('exportType', 'Single'); // TODO: Need to integrate
 
-        ob_clean();
-        ob_end_flush();
-        print_r($exportData['stream']);
-    }
-    exit;
-}
 
-if($exportData['streamtype']==="IMAGE-DATA") {
+/**
+ * If image is processed by the browser just do the minimal job and die
+ */
+if($exportData['streamtype'] === "IMAGE-DATA") {
     $exportObject = convertRawImageDataToFile($exportData);
 }
-
 
 /**
  * If encoded images are found we need to decode and save them in the temp folder.
  */
-if($exportData ['encodedImageData'] && strtolower($exportData ['parameters']["exportformat"]) != 'svg' ){
+if($exportData['encodedImageData'] && strtolower($exportData['parameters']["exportformat"]) != 'svg' ){
     //createEmbeddedImages($exportData ['encodedImageData']);
     parseImageData( $exportData ['encodedImageData']);
 }
@@ -340,6 +335,47 @@ flushStatus($exportedStatus, $exportData ['meta']);
 ##                                                                             ##
 #################################################################################
 #### ------------------------ INPUT STREAM  -------------------------------- ####
+
+function convertRawImageDataToFile($exportData) {
+    global $headerService;
+
+    $mimeTypeArray = array("jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml");
+    $mime = "";
+
+    foreach($mimeTypeArray as $mime) {
+        if(strpos($mime, strtolower($exportData['parameters']['exportformat']))!==false) {
+            break;
+        }
+    }
+
+    if (strtolower($exportData['parameters']['exportaction']) === 'save') {
+        $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
+
+        setLogData('exportedImage', basename($fileStatus['filepath']));
+
+        print_r($fileStatus['filepath']);
+
+        if ($fileStatus ['ready']) {
+            file_put_contents($fileStatus['filepath'], $exportData['stream']);
+        }
+    } else {
+        header('Content-type:' . $mime);
+        header('Content-Disposition: attachment; filename="' . $exportData["parameters"]["exportfilename"].'.'.strtolower($exportData["parameters"]["exportformat"]) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+
+        applyResponseHeaders($headerService->getConfig('headers'));
+
+        ob_clean();
+        ob_end_flush();
+        print_r($exportData['stream']);
+    }
+
+    sendLog();
+
+    exit;
+}
 
 /**
  *  Parses POST stream from chart and builds an array containing
@@ -666,6 +702,16 @@ function applyResponseHeaders($headers) {
     }
 }
 
+/**
+ * Setup the the logger service and send the log
+ */
+function sendLog() {
+    global $loggerService;
+    global $logData;
+
+    $loggerService->send($logData);
+}
+
 #### ------------------------ OUTPUT EXPORT FILE -------------------------------- ####
 
 /**
@@ -689,6 +735,12 @@ function outputExportObject($exportObj, $exportParams) {
     // dynamically call 'setupDownload' or 'setupServer' as per export action
     // pass export paramters and get back export settings in an array
     $exportActionSettings = call_user_func('setup' . ($isDownload ? 'Download' : 'Server'), $exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
+
+    if (!$isDownload) {
+        setLogData('exportedImage', basename($exportActionSettings['filepath']));
+    }
+
+    sendLog();
 
     // check whether export setting gives a 'ready' flag to true/'download'
     // and call output handler
@@ -873,6 +925,8 @@ function setupServer($exportFile, $exportType, $target = "_self") {
  *  @return 	An array containing exportSettings and ready flag
  */
 function setupDownload($exportFile, $exportType, $target = "_self") {
+    global $headerService;
+
     $exportType = strtolower($exportType);
 
     // get mime type list parsing MIMETYPES constant declared in Export Resource PHP file
@@ -890,7 +944,7 @@ function setupDownload($exportFile, $exportType, $target = "_self") {
     // NOTE : you can comment this line in order to replace present window (_self) content with the image/PDF
     header('Content-Disposition: ' . ( strtolower($target == "_self") ? "attachment" : "inline" ) . '; filename="' . $exportFile . '.' . $ext . '"');
 
-    applyResponseHeaders(fcConfig('headers'));
+    applyResponseHeaders($headerService->getConfig('headers'));
 
     // return exportSetting array. Ready should be set to download
     return array('ready' => 'download', "type" => $exportType);
@@ -1001,4 +1055,15 @@ function raise_error($code, $halt = false) {
         // otherwise add the message into global notice repository
         $notices .= $err_message;
     }
+}
+
+/**
+ * Set a single log data
+ * @param String $key
+ * @param String $value
+ */
+function setLogData($key, $value) {
+    global $logData;
+
+    $logData[$key] = $value;
 }

@@ -20,12 +20,12 @@
  *  1.0.0.0 [ 31 December 2012 ]
  *
  *
- * 	FEATURES:
+ *     FEATURES:
  *       - Integrated with new Export feature of FusionCharts XT & FusionCharts Exporter v 2.0
  *       - can save to server side directory
  *       - can provide download or open in browser window/frame other than _self
  *
- * 	ISSUES:
+ *     ISSUES:
  *
  *
  *
@@ -70,7 +70,7 @@
  *
  */
 /**
- *   @requires	index.php  A file that includes this resource
+ *   @requires    index.php  A file that includes this resource
  *              Java 1.3+ & Apache Batik rasterizer class: Export JavaScript charts
  *              (http://xmlgraphics.apache.org/batik/)
  *
@@ -80,36 +80,36 @@
  *
  *   The resource files would have these things as common:
  *
- *   	a) a constant - MIMETYPES that would have a string
+ *       a) a constant - MIMETYPES that would have a string
  *         containing semicolon separated key value pairs.
- * 		   Each key can be a format name specified in the
- * 		   HANDLERASSOCIATIONS constant. The associated value
- * 		   would be the mimetype for the specified format.
+ *            Each key can be a format name specified in the
+ *            HANDLERASSOCIATIONS constant. The associated value
+ *            would be the mimetype for the specified format.
  *
- * 		   e.g. define("MIMETYPES","jpg=image/jpeg;jpeg=image/jpeg;png=image/png;gif=image/gif");
+ *            e.g. define("MIMETYPES","jpg=image/jpeg;jpeg=image/jpeg;png=image/png;gif=image/gif");
  *
  *
- * 		b) a constant - EXTENSIONS that again contain a string of
- * 		   semicolon separated key value pair. Each key would again be the
- * 		   format name and the extension would be the file extension.
+ *         b) a constant - EXTENSIONS that again contain a string of
+ *            semicolon separated key value pair. Each key would again be the
+ *            format name and the extension would be the file extension.
  *
- * 		   e.g. define("EXTENSIONS","jpg=jpg;jpeg=jpg;png=png;gif=gif");
+ *            e.g. define("EXTENSIONS","jpg=jpg;jpeg=jpg;png=png;gif=gif");
  *
  *
  *      c) a function  - exportProcessor ( $stream , $meta )
- * 		   It would take the FusionCharts exncoded image string as $stream &
- * 		   an associative array $meta containging width, height and bgColor keys.
+ *            It would take the FusionCharts exncoded image string as $stream &
+ *            an associative array $meta containging width, height and bgColor keys.
  *
  *         The function would return an object of mixed type which would contain
- * 		   the processed binary/relevant export object.
+ *            the processed binary/relevant export object.
  *
  *
- * 		d) a function - exportOutput ( $exportObj, $exportSettings, $quality=1 )
+ *         d) a function - exportOutput ( $exportObj, $exportSettings, $quality=1 )
  *         It would take the processed export object and other export setting as parameter.
  *         Moreover, it would take an optional parameter - $quality (in scale of 0 to 1).
  *         By Default, the $quality is passed as 1 (best quality)
  *
- * 		   The function would return the file path on success or return false on failure.
+ *            The function would return the file path on success or return false on failure.
  *
  *      [ The other code in the resource file can be anything that support this architecture ]
  *
@@ -142,27 +142,27 @@ define('CONVERT_PATH', '/usr/local/bin/convert'); // imagemagic
 // ==                             Public Functions                            ==
 // =============================================================================
 class stitchImageCallback {
-   private $imageData;
+    private $imageData;
 
-   function __construct($imageData) {
-       $this->imageData = $imageData;
-   }
+    function __construct($imageData) {
+        $this->imageData = $imageData;
+    }
 
-   public function callback($matches) {
-       $imageRet = '';
-       $imageName = explode('/', $matches['2']);
-       $imageName = array_pop($imageName);
+    public function callback($matches) {
+        $imageRet = '';
+        $imageName = explode('/', $matches['2']);
+        $imageName = array_pop($imageName);
 
-       foreach ($this->imageData as $key => $value) {
-           if ($value->name .'.'.$value->type == $imageName) {
-               $imageRet = $value->encodedData;
-           }
-       }
-       if ($imageRet == '') {
-           return '';
-       }
-       return $matches[1] . $imageRet;
-   }
+        foreach ($this->imageData as $key => $value) {
+            if ($value->name .'.'.$value->type == $imageName) {
+                $imageRet = $value->encodedData;
+            }
+        }
+        if ($imageRet == '') {
+            return '';
+        }
+        return $matches[1] . $imageRet;
+    }
 }
 
 /**
@@ -172,21 +172,21 @@ class stitchImageCallback {
 * @return [string]            [SVG with imageDatauri]
 */
 function stitchImageToSvg ($svg, $imageData) {
-   if($imageData != null) {
+    if($imageData != null) {
         $imageData = json_decode($imageData);
         $callback = new stitchImageCallback($imageData);
         return preg_replace_callback("/(<image[^>]*xlink:href *= *[\"']?)([^\"']*)/i", array($callback, 'callback'), $svg);
-   } else {
+    } else {
         return $svg;
-   }
+    }
 
 }
 /**
  *  Gets Export data from FCExporter - main module and build the export binary/objct.
- *  @param	$stream 	(string) export image data in FusionCharts compressed format
- *      	$meta		{array)	Image meta data in keys "width", "heigth" and "bgColor"
+ *  @param    $stream     (string) export image data in FusionCharts compressed format
+ *          $meta        {array)    Image meta data in keys "width", "heigth" and "bgColor"
  *              $exportParams   {array} Export related parameters
- *  @return 			image object/binary
+ *  @return             image object/binary
  */
 function exportProcessor($stream, $meta, $exportParams, $imageData=null) {
     // get mime type list parsing MIMETYPES constant declared in Export Resource PHP file
@@ -297,14 +297,14 @@ function exportProcessor($stream, $meta, $exportParams, $imageData=null) {
 
 /**
  *  exports (save/download) SVG to export formats.
- *  @param	$exportObj 		(mixed) binary/objct exported by exportProcessor
- * 	@param	$exportSettings	(array) various server-side export settings stored in keys like
- * 					"type", "ready" "filepath" etc. Required for 'save' expotAction.
- * 					For 'download' action "filepath" is blank (this is checked to find
- * 					whether the action is "download" or not.
- * 	@param	$quality		(integer) quality factor 0-1 (1 being the best quality). As of now we always pass 1.
+ *  @param    $exportObj         (mixed) binary/objct exported by exportProcessor
+ *     @param    $exportSettings    (array) various server-side export settings stored in keys like
+ *                     "type", "ready" "filepath" etc. Required for 'save' expotAction.
+ *                     For 'download' action "filepath" is blank (this is checked to find
+ *                     whether the action is "download" or not.
+ *     @param    $quality        (integer) quality factor 0-1 (1 being the best quality). As of now we always pass 1.
  *
- *  @return 				false is fails. {filepath} if succeeds. Only returned when action is 'save'.
+ *  @return                 false is fails. {filepath} if succeeds. Only returned when action is 'save'.
  */
 function exportOutput($exportObj, $exportSettings, $quality = 1) {
     // calls svgparser function that saves/downloads binary
@@ -321,8 +321,8 @@ function exportOutput($exportObj, $exportSettings, $quality = 1) {
 
 /**
  *  emulates imagepng/imagegif/imagejpeg. It saves data to server
- *  @param	$exportObj 	(resource) binary exported by exportProcessor
- *  @param	$filepath	(string) Path where the exported is to be stored
+ *  @param    $exportObj     (resource) binary exported by exportProcessor
+ *  @param    $filepath    (string) Path where the exported is to be stored
  *                              when the action is "download" it is null.
  *
  *  @return     (boolean) false is fails. true if succeeds. Only returned when action is 'save'.
