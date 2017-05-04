@@ -348,7 +348,7 @@ function convertRawImageDataToFile($exportData) {
         }
     }
 
-    if (strtolower($exportData['parameters']['exportaction']) === 'save') {
+    if (strtolower($exportData['parameters']['save'])) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
         setLogData('exportedImage', basename($fileStatus['filepath']));
@@ -358,7 +358,9 @@ function convertRawImageDataToFile($exportData) {
         if ($fileStatus ['ready']) {
             file_put_contents($fileStatus['filepath'], $exportData['stream']);
         }
-    } else {
+    }
+
+    if (strtolower($exportData['parameters']['download'])) {
         header('Content-type:' . $mime);
         header('Content-Disposition: attachment; filename="' . $exportData["parameters"]["exportfilename"].'.'.strtolower($exportData["parameters"]["exportformat"]) . '"');
         header('Expires: 0');
@@ -455,7 +457,8 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
     // get global definition of default parameter values
     $defaultParameterValues = array(
         'exportfilename' => 'FusionCharts',
-        'exportaction' => 'download',
+        'download' => false,
+        'save' => false,
         'exporttargetwindow' => '_self',
         'exportformat' => 'PNG'
     );
@@ -475,7 +478,6 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
     }
     // backward compatible setting to get exportFormat through mimetype
     if (!$exportFormat) {
-
         $mimeType = strtolower((string)@$exportRequestStream["type"]);
         $mimeList = bang( @MIME_TO_FORMAT );
 
@@ -489,10 +491,27 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
         }
     }
 
+    // For backward compatiblility of exportaction
+    // Applies only if exportaction is present and download and save
+    // are not present
+    if (isset($params['exportaction']) && !isset($params['download']) && !isset($params['save'])) {
+        $params['download'] = false;
+        $params['save'] = false;
+
+        if ($params['exportaction'] === 'download') {
+            $params['download'] = true;
+        } else if ($params['exportaction'] === 'save') {
+            $params['save'] = true;
+        }
+    }
+
     if (is_array($defaultParameterValues)) {
         // sync with default values
         $params = array_merge($defaultParameterValues, $params);
     }
+
+    $params['download'] = is_bool($params['download']) ? $params['download'] : ($params['download'] === 'true');
+    $params['save'] = is_bool($params['save']) ? $params['save'] : ($params['save'] === 'true');
 
     // return parameters' array
     return $params;
@@ -730,22 +749,32 @@ function sendLog() {
  */
 function outputExportObject($exportObj, $exportParams) {
     // checks whether the export action is 'download'
-    $isDownload = strtolower($exportParams ["exportaction"]) == "download";
+    $isDownload = $exportParams['download'];
+    $isServer = $exportParams['save'];
 
-    // dynamically call 'setupDownload' or 'setupServer' as per export action
-    // pass export paramters and get back export settings in an array
-    $exportActionSettings = call_user_func('setup' . ($isDownload ? 'Download' : 'Server'), $exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
+    $didWork = false;
 
-    if (!$isDownload) {
+    if ($isServer) {
+        $exportActionSettings = setupServer($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
+
         setLogData('exportedImage', basename($exportActionSettings['filepath']));
+
+        if ($exportActionSettings['ready']) {
+            $didWork = exportOutput($exportObj, $exportActionSettings, 1);
+        }
     }
 
     sendLog();
 
-    // check whether export setting gives a 'ready' flag to true/'download'
-    // and call output handler
-    // return status back (filename if success, false if not success )
-    return ( @$exportActionSettings ['ready'] ? exportOutput($exportObj, $exportActionSettings, 1) : false );
+    if ($isDownload) {
+        $exportActionSettings = setupDownload($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
+
+        if ($exportActionSettings['ready']) {
+            $didWork = exportOutput($exportObj, $exportActionSettings, 1);
+        }
+    }
+
+    return $didWork;
 }
 
 /**
@@ -814,9 +843,7 @@ function buildResponse($arrMsg) {
 
     // check whether export action is download. If so the response output would be at browser
     // i.e. the output format would be HTML
-    $isHTML = ( ( $exportData ['parameters']['exportaction'] ) != null ? (strtolower(
-                            $exportData ['parameters']['exportaction']) == "download" ) : true );
-
+    $isHTML = $exportData['parameters']['download'];
 
     // If the output format is not HTML then start building a quertstring hence start with a &
     $msg = ( $isHTML ? "" : "&" );
