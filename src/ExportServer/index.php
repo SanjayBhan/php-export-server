@@ -100,8 +100,8 @@ include('helpers.php');
  */
 /**
  *   @requires	FCExporter_REL2IMG.php: Export Flash charts to PNG/JPG
- *              FCExporter_REL2IMG.php: Export Flash charts to PDF
- *              FCExporter_REL2IMG.php: Export JavaScript charts to all formats
+ *              FCExporter_REL2PDF.php: Export Flash charts to PDF
+ *              FCExporter_SVG2ALL.php: Export JavaScript charts to all formats
  *
  *              Java 1.3+ & Apache Batik rasterizer class: Export JavaScript charts
  *              (http://xmlgraphics.apache.org/batik/)
