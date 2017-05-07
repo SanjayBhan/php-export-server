@@ -253,6 +253,7 @@ setLogData('userTimeZone', $exportRequestStream['user_time_zone']);
 setLogData('userIPAddress', $headers['Origin']);
 setLogData('userCountry', 'India');
 setLogData('chartIdentifier', 'Hash');
+setLogData('serverDateTime', date('Y-m-d H:i:s'));
 setLogData('exportAction', $exportData['parameters']['exportactionnew']);
 
 

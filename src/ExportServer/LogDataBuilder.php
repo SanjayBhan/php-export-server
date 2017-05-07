@@ -22,6 +22,7 @@ class LogDataBuilder
             'userIPAddress' => $headers['user-agent'][0],
             'userCountry' => 'India',
             'chartIdentifier' => 'Hash',
+            'serverDateTime' => date('Y-m-d H:i:s'),
             'exportAction' => $params['exportactionnew'],
         ];
 
