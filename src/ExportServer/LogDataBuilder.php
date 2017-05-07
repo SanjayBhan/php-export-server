@@ -9,18 +9,20 @@ class LogDataBuilder
         date_default_timezone_set('UTC');
 
         $data = [
-            'exportedImage' => $params['fileFullName'],
-            'chartIdentifierHash' => $params['chartType'],
-            'chartTitle' => $params['chartCaption'],
+            'chartType' => $params['charttype'],
+            'chartCaption' => $params['chart_caption'],
+            'chartSubCaption' => $params['chart_sub_caption'],
+            'isSingleExport' => $params['is_single_export'],
+            'exportFileName' => $params['exportfilename'],
+            'exportFormat' => $params['exportformat'],
             'chartOriginUrl' => $headers['origin'][0],
-            'serverDateTime' => date('Y-m-d H:i:s'),
-            'userTimeZone' => $params['userTimeZone'],
-            'userIP' => $headers['origin'][0],
-            'userCountry' => 'IND',
             'userAgent' => $headers['user-agent'][0],
-            'languageIdentifier' => 'PHP',
-            'licenseInfo' => 'MIT',
-            'exportType' => $params['exportType'],
+            'isFullVersion' => $params['is_full_version'],
+            'userTimeZone' => $params['user_time_zone'],
+            'userIPAddress' => $headers['user-agent'][0],
+            'userCountry' => 'India',
+            'chartIdentifier' => 'Hash',
+            'exportAction' => $params['exportactionnew'],
         ];
 
         $data = (object) $data;

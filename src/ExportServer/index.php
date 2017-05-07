@@ -99,7 +99,7 @@ include('helpers.php');
  *
  */
 /**
- *   @requires	FCExporter_REL2IMG.php: Export Flash charts to PNG/JPG
+ *   @requires    FCExporter_REL2IMG.php: Export Flash charts to PNG/JPG
  *              FCExporter_REL2PDF.php: Export Flash charts to PDF
  *              FCExporter_SVG2ALL.php: Export JavaScript charts to all formats
  *
@@ -113,36 +113,36 @@ include('helpers.php');
  *
  *   The resource files would have these things as common:
  *
- *   	a) a constant - MIMETYPES that would have a string
+ *       a) a constant - MIMETYPES that would have a string
  *         containing semicolon separated key value pairs.
- * 		   Each key can be a format name specified in the
- * 		   HANDLER_ASSOCIATIONS constant. The associated value
- * 		   would be the mimetype for the specified format.
+ *            Each key can be a format name specified in the
+ *            HANDLER_ASSOCIATIONS constant. The associated value
+ *            would be the mimetype for the specified format.
  *
- * 		   e.g. define("MIMETYPES","jpg=image/jpeg;jpeg=image/jpeg;png=image/png;gif=image/gif");
+ *            e.g. define("MIMETYPES","jpg=image/jpeg;jpeg=image/jpeg;png=image/png;gif=image/gif");
  *
  *
- * 		b) a constant - EXTENSIONS that again contain a string of
- * 		   semicolon separated key value pair. Each key would again be the
- * 		   format name and the extension would be the file extension.
+ *         b) a constant - EXTENSIONS that again contain a string of
+ *            semicolon separated key value pair. Each key would again be the
+ *            format name and the extension would be the file extension.
  *
- * 		   e.g. define("EXTENSIONS","jpg=jpg;jpeg=jpg;png=png;gif=gif");
+ *            e.g. define("EXTENSIONS","jpg=jpg;jpeg=jpg;png=png;gif=gif");
  *
  *
  *      c) a function  - exportProcessor ( $stream , $meta )
- * 		   It would take the FusionCharts exncoded image string as $stream &
- * 		   an associative array $meta containging width, height and bgColor keys.
+ *            It would take the FusionCharts exncoded image string as $stream &
+ *            an associative array $meta containging width, height and bgColor keys.
  *
  *         The function would return an object of mixed type which would contain
- * 		   the processed binary/relevant export object.
+ *            the processed binary/relevant export object.
  *
  *
- * 		d) a function - exportOutput ( $exportObj, $exportSettings, $quality=1 )
+ *         d) a function - exportOutput ( $exportObj, $exportSettings, $quality=1 )
  *         It would take the processed export object and other export setting as parameter.
  *         Moreover, it would take an optional parameter - $quality (in scale of 0 to 1).
  *         By Default, the $quality is passed as 1 (best quality)
  *
- * 		   The function would return the file path on success or return false on failure.
+ *            The function would return the file path on success or return false on failure.
  *
  *      [ The other code in the resource file can be anything that support this architecture ]
  *
@@ -157,22 +157,22 @@ include('helpers.php');
 /**
  * IMPORTANT: You need to change the location of folder where
  *            the exported chart images/PDFs will be saved on your
- * 			  server. Please specify the path to a folder with
- * 			  write permissions in the constant SAVE_PATH below.
+ *               server. Please specify the path to a folder with
+ *               write permissions in the constant SAVE_PATH below.
  *
- * 	Please provide the path as per PHP path conventions. You can use relative or
- * 	absolute path.
+ *     Please provide the path as per PHP path conventions. You can use relative or
+ *     absolute path.
  *  Examples: './' , '/users/me/images/' , './myimages'
  *
- * 	For Windows servers you can ALSO use \\ as path separator too. e.g. c:\\php\\mysite\\
+ *     For Windows servers you can ALSO use \\ as path separator too. e.g. c:\\php\\mysite\\
  */
 // define("SAVE_PATH", dirname(__FILE__) . "/ExportedImages/");
 
 /**
- * 	IMPORTANT: This constant HTTP_URI stores the HTTP reference to
- * 	           the folder where exported charts will be saved.
- * 			   Please enter the HTTP representation of that folder
- * 			   in this constant e.g., http://www.yourdomain.com/images/
+ *     IMPORTANT: This constant HTTP_URI stores the HTTP reference to
+ *                the folder where exported charts will be saved.
+ *                Please enter the HTTP representation of that folder
+ *                in this constant e.g., http://www.yourdomain.com/images/
  */
 define("HTTP_URI", "ExportedImages/");
 
@@ -235,35 +235,25 @@ $exportRequestStream = $_POST;
 
 $headers = getallheaders();
 
-// echo "<pre>";
-// print_r($exportRequestStream);
-// die();
-// echo "</pre>";
-
-// InsertToDB
-// Uncomment the below line if want to save the export log in database
-//insertToDb($exportRequestStream);
-
-setLogData('chartIdentifierHash', $exportRequestStream['charttype']);
-
 $exportData = parseExportRequestStream($exportRequestStream);
-
-$exportFilename = $exportData['parameters']['exportfilename'].'.'.strtolower($exportData['parameters']['exportformat']);
 
 /**
  * Set the default log datas
  */
-setLogData('exportedImage', $exportFilename);
-setLogData('chartTitle', ''); // TODO: Need to integrate
+setLogData('chartType', $exportRequestStream['charttype']);
+setLogData('chartCaption', $exportRequestStream['chart_caption']);
+setLogData('chartSubCaption', $exportRequestStream['chart_sub_caption']);
+setLogData('isSingleExport', $exportRequestStream['is_single_export']);
+setLogData('exportFileName', $exportData['parameters']['exportfilename']);
+setLogData('exportFormat', strtolower($exportData['parameters']['exportformat']));
 setLogData('chartOriginUrl', $headers['Origin']);
-setLogData('serverDateTime', date('Y-m-d H:i:s'));
-setLogData('userTimeZone', 'ISD'); // TODO: Need to integrate
-setLogData('userIP', $headers['Origin']); // TODO: Difference with 'chartOriginUrl'?
-setLogData('userCountry', 'India'); // TODO: Need to integrate
 setLogData('userAgent', $headers['User-Agent']);
-setLogData('languageIdentifier', 'PHP'); // TODO: Needed?
-setLogData('licenseInfo', 'MIT'); // TODO: Need to integrate
-setLogData('exportType', 'Single'); // TODO: Need to integrate
+setLogData('isFullVersion', $exportRequestStream['is_full_version']);
+setLogData('userTimeZone', $exportRequestStream['user_time_zone']);
+setLogData('userIPAddress', $headers['Origin']);
+setLogData('userCountry', 'India');
+setLogData('chartIdentifier', 'Hash');
+setLogData('exportAction', $exportData['parameters']['exportactionnew']);
 
 
 /**
@@ -351,7 +341,7 @@ function convertRawImageDataToFile($exportData) {
     if (strtolower($exportData['parameters']['save'])) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
-        setLogData('exportedImage', basename($fileStatus['filepath']));
+        setLogData('exportFileName', pathinfo($fileStatus['filepath'])['filename']);
 
         print_r($fileStatus['filepath']);
 
@@ -383,8 +373,8 @@ function convertRawImageDataToFile($exportData) {
  *  Parses POST stream from chart and builds an array containing
  *  export data and parameters in a format readable by other functions.
  *
- *  @param	$exportRequestStream 	All POST data (array) from chart
- *  @return	An array of processed export data and parameters
+ *  @param    $exportRequestStream     All POST data (array) from chart
+ *  @return    An array of processed export data and parameters
  */
 function parseExportRequestStream($exportRequestStream) {
 
@@ -408,8 +398,8 @@ function parseExportRequestStream($exportRequestStream) {
                 or raise_error(100, true);
     } else {
         if(!isset($exportRequestStream ['stream'])) {
-		    raise_error(100, true);
-	    }
+            raise_error(100, true);
+        }
         // if stream-type is not SVG then this section will execute
         $exportData ['stream'] = (str_replace(' ','+', $exportRequestStream ['stream']));
         $exportData ['stream'] = base64_decode(substr($exportData ['stream'], strpos($exportData ['stream'], ",")+1));
@@ -450,7 +440,7 @@ function parseExportRequestStream($exportRequestStream) {
 /**
  *  Parse export 'parameters' string into an associative array with key => value elements.
  *  Also sync default values from $defaultparameterValues array (global)
- *  @param 	$strParams A string with parameters (key=value pairs) separated  by | (pipe)
+ *  @param     $strParams A string with parameters (key=value pairs) separated  by | (pipe)
  *  @return An associative array of key => value pairs
  */
 function parseExportParams($strParams, $exportRequestStream = array()) {
@@ -491,27 +481,28 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
         }
     }
 
-    // For backward compatiblility of exportaction
-    // Applies only if exportaction is present and download and save
-    // are not present
-    if (isset($params['exportaction']) && !isset($params['download']) && !isset($params['save'])) {
-        $params['download'] = false;
-        $params['save'] = false;
+    if (is_array($defaultParameterValues)) {
+        // sync with default values
+        $params = array_merge($defaultParameterValues, $params);
+    }
 
+    // Handles the exportaction params
+    if (isset($params['exportactionnew'])) {
+        if ($params['exportactionnew'] === 'download') {
+            $params['download'] = true;
+        } else if ($params['exportactionnew'] === 'save') {
+            $params['save'] = true;
+        } else if ($params['exportactionnew'] === 'save-download') {
+            $params['download'] = true;
+            $params['save'] = true;
+        }
+    } else if (isset($params['exportaction'])) {
         if ($params['exportaction'] === 'download') {
             $params['download'] = true;
         } else if ($params['exportaction'] === 'save') {
             $params['save'] = true;
         }
     }
-
-    if (is_array($defaultParameterValues)) {
-        // sync with default values
-        $params = array_merge($defaultParameterValues, $params);
-    }
-
-    $params['download'] = is_bool($params['download']) ? $params['download'] : ($params['download'] === 'true');
-    $params['save'] = is_bool($params['save']) ? $params['save'] : ($params['save'] === 'true');
 
     // return parameters' array
     return $params;
@@ -645,10 +636,10 @@ function saveEmbeddedImage($name, $type, $data, $path="temp"){
 
 /**
  *  Builds and returns a path of the Export Resource PHP file needed to
- * 	export the chart to the format specified as parameter.
- *  @param	$strFormat (string) export format specified form chart
+ *     export the chart to the format specified as parameter.
+ *  @param    $strFormat (string) export format specified form chart
  *  @return A path (string) containing the Export Resource PHP file
- * 			for the specified format
+ *             for the specified format
  */
 function getExporter($strFormat, $streamtype = "RLE") {
 
@@ -743,9 +734,9 @@ function sendLog() {
  *  process would stop here if the action is 'download'. In the other case,
  *  it gets back success status from output handler function and returns it.
  *
- *  @param 	$exportObj 		An export binary/object of mixed type (image/PDF)
- *  @param 	$exportParams	An array of export parameters
- *  @return 				export success status ( filename if success, false if not)
+ *  @param     $exportObj         An export binary/object of mixed type (image/PDF)
+ *  @param     $exportParams    An array of export parameters
+ *  @return                 export success status ( filename if success, false if not)
  */
 function outputExportObject($exportObj, $exportParams) {
     // checks whether the export action is 'download'
@@ -757,7 +748,7 @@ function outputExportObject($exportObj, $exportParams) {
     if ($isServer) {
         $exportActionSettings = setupServer($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
 
-        setLogData('exportedImage', basename($exportActionSettings['filepath']));
+        setLogData('exportFileName', pathinfo($exportActionSettings['filepath'])['filename']);
 
         if ($exportActionSettings['ready']) {
             $didWork = exportOutput($exportObj, $exportActionSettings, 1);
@@ -782,9 +773,9 @@ function outputExportObject($exportObj, $exportParams) {
  *  It parses the exported status through parser function parseExportedStatus,
  *  builds proper response string using buildResponse function and flushes the response
  *  string to the output stream and terminates the program.
- *  @param	$status		exported status ( false if failed/error, filename as string if success)
- *         	$meta		array containing meta descriptions of the chart like width, height
- * 			$msg		custom message to be added as statusMessage
+ *  @param    $status        exported status ( false if failed/error, filename as string if success)
+ *             $meta        array containing meta descriptions of the chart like width, height
+ *             $msg        custom message to be added as statusMessage
  *
  */
 function flushStatus($status, $meta, $msg = '') {
@@ -795,10 +786,10 @@ function flushStatus($status, $meta, $msg = '') {
  *  Parses the exported status and builds an array of export status information. As per
  *  status it builds a status array which contains statusCode (0/1), statusMesage, fileName,
  *  width, height, DOMId and notice in some cases.
- *  @param	$status		exported status ( false if failed/error, filename as stirng if success)
- *         	$meta		array containing meta descriptions of the chart like width, height and DOMId
- * 			$msg		custom message to be added as statusMessage
- * 	@return			 	array of status information
+ *  @param    $status        exported status ( false if failed/error, filename as stirng if success)
+ *             $meta        array containing meta descriptions of the chart like width, height and DOMId
+ *             $msg        custom message to be added as statusMessage
+ *     @return                 array of status information
  */
 function parseExportedStatus($status, $meta, $msg = '') {
     // get global 'notice' variable
@@ -834,8 +825,8 @@ function parseExportedStatus($status, $meta, $msg = '') {
  *  a & to build a querystring (to pass to chart) or joined by a HTML <BR> to show neat
  *  and clean status informaton in Browser window if download fails at the processing stage.
  *
- *  @param	 $arrMsg	Array of string containing status data as [key=value ]
- *  @return				A string to be written to output stream
+ *  @param     $arrMsg    Array of string containing status data as [key=value ]
+ *  @return                A string to be written to output stream
  */
 function buildResponse($arrMsg) {
     // access global variable to get export action
@@ -858,10 +849,10 @@ function buildResponse($arrMsg) {
 
 /**
  *  check server permissions and settings and return ready flag to exportSettings
- *  @param 	$exportFile 	Name of the new file to be created
- *  @param 	$exportType		Export type
- *  @param 	$target			target window where the download would happen [ Not required here ]
- *  @return 	An array containing exportSettings and ready flag
+ *  @param     $exportFile     Name of the new file to be created
+ *  @param     $exportType        Export type
+ *  @param     $target            target window where the download would happen [ Not required here ]
+ *  @return     An array containing exportSettings and ready flag
  */
 function setupServer($exportFile, $exportType, $target = "_self") {
     // get extension related to specified type
@@ -946,10 +937,10 @@ function setupServer($exportFile, $exportType, $target = "_self") {
 
 /**
  *  setup download headers and return ready flag to exportSettings
- *  @param 	$exportFile 	Name of the new file to be created
- *  @param 	$exportType		Export type
- *  @param 	$target			target window where the download would happen (_self/_blank/_parent/_top/window name)
- *  @return 	An array containing exportSettings and ready flag
+ *  @param     $exportFile     Name of the new file to be created
+ *  @param     $exportType        Export type
+ *  @param     $target            target window where the download would happen (_self/_blank/_parent/_top/window name)
+ *  @return     An array containing exportSettings and ready flag
  */
 function setupDownload($exportFile, $exportType, $target = "_self") {
     global $headerService;
@@ -979,7 +970,7 @@ function setupDownload($exportFile, $exportType, $target = "_self") {
 
 /**
  *  gets file extension checking the export type.
- *  @param	$exportType 	(string) export format
+ *  @param    $exportType     (string) export format
  *  @return file extension as string
  */
 function getExtension($exportType) {
@@ -998,7 +989,7 @@ function getExtension($exportType) {
 /**
  *  generates a file suffix for a existing file name to apply intelligent
  *  file naming
- *  @return 	a string containing UUID and random number /timestamp
+ *  @return     a string containing UUID and random number /timestamp
  */
 function generateIntelligentFileId() {
     //generate UUID
@@ -1016,9 +1007,9 @@ function generateIntelligentFileId() {
 /**
  *  Helper function that splits a string containing delimiter separated key value pairs
  *  into associative array
- *  @param 	$str	(string) delimiter separated key value pairs
- *  @param  $delimiterList	an Array whose first element is the delimiter and the
- * 							second element can be anything which separates key from value
+ *  @param     $str    (string) delimiter separated key value pairs
+ *  @param  $delimiterList    an Array whose first element is the delimiter and the
+ *                             second element can be anything which separates key from value
  *
  *  @return An associative array with key => value
  */
@@ -1049,10 +1040,10 @@ function bang($str, $delimiterList = array(";", "="), $retainPropertyCase = fals
  *  Error reporter function that has a list of error messages. It can terminate the execution
  *  and send successStatus=0 along with a error message. It can also append notice to a global variable
  *  and continue execution of the program.
- *  @param		$code 	error code as Integer (referring to the index of the errMessages
- * 						array containing list of error messages)
- * 						OR, it can be a string containing the error message/notice
- * 	@param 		$halt 	(boolean) Whether to halt execution
+ *  @param        $code     error code as Integer (referring to the index of the errMessages
+ *                         array containing list of error messages)
+ *                         OR, it can be a string containing the error message/notice
+ *     @param         $halt     (boolean) Whether to halt execution
  */
 function raise_error($code, $halt = false) {
 
