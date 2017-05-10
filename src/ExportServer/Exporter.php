@@ -56,10 +56,12 @@ class Exporter
     {
         $defaultConfig = [
             'save_path' => dirname(__FILE__) . '/ExportedImages/',
+            'allow_save' => true
         ];
 
         $config = array_merge($defaultConfig, $userConfig);
 
         define('SAVE_PATH', $config['save_path']);
+        define('ALLOW_SAVE', $config['allow_save']);
     }
 }

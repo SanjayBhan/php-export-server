@@ -339,7 +339,7 @@ function convertRawImageDataToFile($exportData) {
         }
     }
 
-    if (strtolower($exportData['parameters']['save'])) {
+    if (strtolower($exportData['parameters']['save']) && ALLOW_SAVE) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
         setLogData('exportFileName', pathinfo($fileStatus['filepath'])['filename']);
@@ -749,13 +749,9 @@ function sendLog() {
  *  @return                 export success status ( filename if success, false if not)
  */
 function outputExportObject($exportObj, $exportParams) {
-    // checks whether the export action is 'download'
-    $isDownload = $exportParams['download'];
-    $isServer = $exportParams['save'];
-
     $didWork = false;
 
-    if ($isServer) {
+    if ($exportParams['save'] && ALLOW_SAVE) {
         $exportActionSettings = setupServer($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
 
         setLogData('exportFileName', pathinfo($exportActionSettings['filepath'])['filename']);
@@ -767,7 +763,7 @@ function outputExportObject($exportObj, $exportParams) {
 
     sendLog();
 
-    if ($isDownload) {
+    if ($exportParams['download']) {
         $exportActionSettings = setupDownload($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
 
         if ($exportActionSettings['ready']) {
