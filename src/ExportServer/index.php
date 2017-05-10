@@ -240,21 +240,21 @@ $exportData = parseExportRequestStream($exportRequestStream);
 /**
  * Set the default log datas
  */
-setLogData('chartType', $exportRequestStream['charttype']);
-setLogData('chartCaption', $exportRequestStream['chart_caption']);
-setLogData('chartSubCaption', $exportRequestStream['chart_sub_caption']);
-setLogData('isSingleExport', $exportRequestStream['is_single_export']);
-setLogData('exportFileName', $exportData['parameters']['exportfilename']);
+setLogData('chartType', @$exportRequestStream['charttype']);
+setLogData('chartCaption', @$exportRequestStream['chart_caption']);
+setLogData('chartSubCaption', @$exportRequestStream['chart_sub_caption']);
+setLogData('isSingleExport', @$exportRequestStream['is_single_export']);
+setLogData('exportFileName', @$exportData['parameters']['exportfilename']);
 setLogData('exportFormat', strtolower($exportData['parameters']['exportformat']));
 setLogData('chartOriginUrl', $headers['Origin']);
 setLogData('userAgent', $headers['User-Agent']);
-setLogData('isFullVersion', $exportRequestStream['is_full_version']);
-setLogData('userTimeZone', $exportRequestStream['user_time_zone']);
+setLogData('isFullVersion', @$exportRequestStream['is_full_version']);
+setLogData('userTimeZone', @$exportRequestStream['user_time_zone']);
 setLogData('userIPAddress', $_SERVER['REMOTE_ADDR']);
 setLogData('userCountry', 'India');
 setLogData('chartIdentifier', 'Hash');
 setLogData('serverDateTime', date('Y-m-d H:i:s'));
-setLogData('exportAction', $exportData['parameters']['configuredexportaction']);
+setLogData('exportAction', @$exportData['parameters']['configuredexportaction']);
 
 
 /**
