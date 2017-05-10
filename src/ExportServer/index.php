@@ -250,11 +250,11 @@ setLogData('chartOriginUrl', $headers['Origin']);
 setLogData('userAgent', $headers['User-Agent']);
 setLogData('isFullVersion', $exportRequestStream['is_full_version']);
 setLogData('userTimeZone', $exportRequestStream['user_time_zone']);
-setLogData('userIPAddress', $headers['Origin']);
+setLogData('userIPAddress', $_SERVER['REMOTE_ADDR']);
 setLogData('userCountry', 'India');
 setLogData('chartIdentifier', 'Hash');
 setLogData('serverDateTime', date('Y-m-d H:i:s'));
-setLogData('exportAction', $exportData['parameters']['exportactionnew']);
+setLogData('exportAction', $exportData['parameters']['configuredexportaction']);
 
 
 /**
@@ -502,6 +502,15 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
             $params['download'] = true;
         } else if ($params['exportaction'] === 'save') {
             $params['save'] = true;
+        }
+    }
+
+    // Backward compatiblility for configuredexportaction
+    if (empty($params['configuredexportaction'])) {
+        if (isset($params['exportactionnew'])) {
+            $params['configuredexportaction'] = $params['exportactionnew'];
+        } else if (isset($params['exportaction'])) {
+            $params['configuredexportaction'] = $params['exportaction'];
         }
     }
 
