@@ -328,7 +328,6 @@ function exportOutput($exportObj, $exportSettings, $quality = 1) {
  *  @return     (boolean) false is fails. true if succeeds. Only returned when action is 'save'.
  */
 function filesaver($exportObject, $filepath) {
-
     // when filepath is null the action is 'download'
     // hence write the  bimary to response stream and immediately terminate/close/end stream
     // to prevent any garbage that might get into response and corrupt the  binary

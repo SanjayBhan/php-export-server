@@ -129,4 +129,3 @@ function returnSanitized ($param,$filter = "")
         //$errorSanitized = $errorSanitized + 1;
     }
 }
-?>

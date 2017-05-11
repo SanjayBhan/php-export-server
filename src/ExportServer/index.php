@@ -708,7 +708,7 @@ function sendLog() {
  */
 function outputExportObject($exportObj, $exportParams) {
     $didWork = false;
-    var_dump($exportParams, ALLOW_SAVE);
+
     if ($exportParams['save'] && ALLOW_SAVE) {
         $exportActionSettings = setupServer($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
 
