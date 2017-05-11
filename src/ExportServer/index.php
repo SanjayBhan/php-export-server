@@ -235,21 +235,21 @@ $exportData = parseExportRequestStream($exportRequestStream);
 /**
  * Set the default log datas
  */
-setLogData('chartType', @$exportRequestStream['charttype']);
-setLogData('chartCaption', @$exportRequestStream['chart_caption']);
-setLogData('chartSubCaption', @$exportRequestStream['chart_sub_caption']);
-setLogData('isSingleExport', @$exportRequestStream['is_single_export']);
-setLogData('exportFileName', @$exportData['parameters']['exportfilename']);
-setLogData('exportFormat', strtolower($exportData['parameters']['exportformat']));
-setLogData('chartOriginUrl', $headers['Origin']);
-setLogData('userAgent', $headers['User-Agent']);
-setLogData('isFullVersion', @$exportRequestStream['is_full_version']);
-setLogData('userTimeZone', @$exportRequestStream['user_time_zone']);
-setLogData('userIPAddress', $_SERVER['REMOTE_ADDR']);
-setLogData('userCountry', 'India');
-setLogData('chartIdentifier', 'Hash');
-setLogData('serverDateTime', date('Y-m-d H:i:s'));
-setLogData('exportAction', @$exportData['parameters']['configuredexportaction']);
+$loggerService->setData('chartType', @$exportRequestStream['charttype']);
+$loggerService->setData('chartCaption', @$exportRequestStream['chart_caption']);
+$loggerService->setData('chartSubCaption', @$exportRequestStream['chart_sub_caption']);
+$loggerService->setData('isSingleExport', @$exportRequestStream['is_single_export']);
+$loggerService->setData('exportFileName', @$exportData['parameters']['exportfilename']);
+$loggerService->setData('exportFormat', strtolower($exportData['parameters']['exportformat']));
+$loggerService->setData('chartOriginUrl', $headers['Origin']);
+$loggerService->setData('userAgent', $headers['User-Agent']);
+$loggerService->setData('isFullVersion', @$exportRequestStream['is_full_version']);
+$loggerService->setData('userTimeZone', @$exportRequestStream['user_time_zone']);
+$loggerService->setData('userIPAddress', $_SERVER['REMOTE_ADDR']);
+$loggerService->setData('userCountry', 'India');
+$loggerService->setData('chartIdentifier', 'Hash');
+$loggerService->setData('serverDateTime', date('Y-m-d H:i:s'));
+$loggerService->setData('exportAction', @$exportData['parameters']['configuredexportaction']);
 
 
 /**
@@ -323,6 +323,7 @@ flushStatus($exportedStatus, $exportData ['meta']);
 #### ------------------------ INPUT STREAM  -------------------------------- ####
 
 function convertRawImageDataToFile($exportData) {
+    global $loggerService;
     global $headerService;
 
     $mimeTypeArray = array("jpg=image/jpeg", "jpeg=image/jpeg", "gif=image/gif", "png=image/png", "pdf=application/pdf", "svg=image/svg+xml");
@@ -337,7 +338,7 @@ function convertRawImageDataToFile($exportData) {
     if (strtolower($exportData['parameters']['save']) && ALLOW_SAVE) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
-        setLogData('exportFileName', pathinfo($fileStatus['filepath'])['filename']);
+        $loggerService->setData('exportFileName', pathinfo($fileStatus['filepath'])['filename']);
 
         print_r($fileStatus['filepath']);
 
@@ -360,7 +361,7 @@ function convertRawImageDataToFile($exportData) {
         print_r($exportData['stream']);
     }
 
-    sendLog();
+    $loggerService->send();
 
     exit;
 }
@@ -680,16 +681,6 @@ function applyResponseHeaders($headers) {
     }
 }
 
-/**
- * Setup the the logger service and send the log
- */
-function sendLog() {
-    global $loggerService;
-    global $logData;
-
-    $loggerService->send($logData);
-}
-
 #### ------------------------ OUTPUT EXPORT FILE -------------------------------- ####
 
 /**
@@ -707,19 +698,21 @@ function sendLog() {
  *  @return                 export success status ( filename if success, false if not)
  */
 function outputExportObject($exportObj, $exportParams) {
+    global $loggerService;
+
     $didWork = false;
 
     if ($exportParams['save'] && ALLOW_SAVE) {
         $exportActionSettings = setupServer($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
 
-        setLogData('exportFileName', pathinfo($exportActionSettings['filepath'])['filename']);
+        $loggerService->setData('exportFileName', pathinfo($exportActionSettings['filepath'])['filename']);
 
         if ($exportActionSettings['ready']) {
             $didWork = exportOutput($exportObj, $exportActionSettings, 1);
         }
     }
 
-    sendLog();
+    $loggerService->send();
 
     if ($exportParams['download']) {
         $exportActionSettings = setupDownload($exportParams['exportfilename'], $exportParams['exportformat'], $exportParams['exporttargetwindow']);
@@ -1037,15 +1030,4 @@ function raise_error($code, $halt = false) {
         // otherwise add the message into global notice repository
         $notices .= $err_message;
     }
-}
-
-/**
- * Set a single log data
- * @param String $key
- * @param String $value
- */
-function setLogData($key, $value) {
-    global $logData;
-
-    $logData[$key] = $value;
 }

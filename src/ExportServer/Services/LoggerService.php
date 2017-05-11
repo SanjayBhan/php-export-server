@@ -19,6 +19,8 @@ class LoggerService
         'binding_key' => 'log.info',
     ];
 
+    protected $data;
+
     protected $config;
 
     protected $connection;
@@ -36,15 +38,20 @@ class LoggerService
         $this->channel->exchange_declare($this->config['exchange_name'], $this->config['exchange_type'], false, false, false);
     }
 
-    public function send($data)
+    public function send()
     {
-        $msg = new AMQPMessage(json_encode($data));
+        $msg = new AMQPMessage(json_encode($this->data));
 
         $this->channel->basic_publish($msg, $this->config['exchange_name'], $this->config['binding_key']);
 
         $this->close();
 
         return $this;
+    }
+
+    public function setData($key, $value)
+    {
+        $this->data[$key] = $value;
     }
 
     private function close()

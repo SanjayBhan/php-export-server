@@ -43,7 +43,6 @@ class Exporter
         global $embedderService;
 
         global $loggerService;
-        global $logData;
 
         global $headerService;
 
