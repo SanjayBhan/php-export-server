@@ -9,21 +9,21 @@ class LogDataBuilder
         date_default_timezone_set('UTC');
 
         $data = [
-            'chartType' => $params['chartType'],
-            'chartCaption' => $params['chartCaption'],
-            'chartSubCaption' => $params['chartSubCaption'],
-            'isSingleExport' => $params['isSingleExport'],
-            'exportFileName' => $params['exportFileName'],
-            'exportFormat' => $params['exportFormat'],
+            'chartType' => @$params['chartType'],
+            'chartCaption' => @$params['chartCaption'],
+            'chartSubCaption' => @$params['chartSubCaption'],
+            'isSingleExport' => @$params['isSingleExport'],
+            'exportFileName' => @$params['exportFileName'],
+            'exportFormat' => @$params['exportFormat'],
             'chartOriginUrl' => $headers['origin'][0],
             'userAgent' => $headers['user-agent'][0],
-            'isFullVersion' => $params['isFullVersion'],
-            'userTimeZone' => $params['userTimeZone'],
+            'isFullVersion' => @$params['isFullVersion'],
+            'userTimeZone' => @$params['userTimeZone'],
             'userIPAddress' => $_SERVER['REMOTE_ADDR'],
             'userCountry' => 'India',
             'chartIdentifier' => 'Hash',
             'serverDateTime' => date('Y-m-d H:i:s'),
-            'exportAction' => $params['exportAction'],
+            'exportAction' => @$params['exportAction'],
         ];
 
         $data = (object) $data;
