@@ -2,6 +2,7 @@
 
 namespace FCExportServer;
 
+use FCExportServer\Services\EmbedderService;
 use FCExportServer\Services\LoggerService;
 use FCExportServer\Services\HeaderService;
 
@@ -15,6 +16,8 @@ class Exporter
 
     protected $config;
 
+    protected $embedderService;
+
     protected $loggerService;
 
     protected $headerService;
@@ -24,6 +27,8 @@ class Exporter
         $this->makeConfig($userConfig);
 
         $this->setServerConfig($this->config['server']);
+
+        $this->embedderService = new EmbedderService();
 
         $this->loggerService = new LoggerService($this->config['logger']);
 
@@ -35,10 +40,14 @@ class Exporter
         global $notices;
         global $exportData;
 
+        global $embedderService;
+
         global $loggerService;
         global $logData;
 
         global $headerService;
+
+        $embedderService = $this->embedderService;
 
         $loggerService = $this->loggerService;
 

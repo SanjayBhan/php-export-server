@@ -1,13 +1,8 @@
 <?php
+
 require(__DIR__ . '/../../vendor/autoload.php');
 
 include('sanitizer.php');
-include('helpers.php');
-
-// Uncomment the below line if want to save the export log in database
-// have to configure server and database from the file admin/includes/config.php
-// also uncomment the line insertToDb($exportRequestStream)
-// include("insertToDb.php");
 
 /**
  *
@@ -273,7 +268,7 @@ if($exportData['encodedImageData'] && strtolower($exportData['parameters']["expo
 }
 
 if (strtolower($exportData['streamtype']) === 'svg') {
-    $exportData['stream'] = downloadAndInsertEmbeddedImages($exportData['stream']);
+    $exportData['stream'] = $embedderService->serve($exportData['stream']);
 }
 
 /**
@@ -652,7 +647,6 @@ function saveEmbeddedImage($name, $type, $data, $path="temp"){
  *             for the specified format
  */
 function getExporter($strFormat, $streamtype = "RLE") {
-
     // get array of [format => handler suffix ] from HANDLER_ASSOCIATIONS
     $associationCluster = bang(HANDLER_ASSOCIATIONS, array('|', ':'), true);
     $associations = bang(@$associationCluster[$streamtype], array(";", "="), true);
@@ -669,42 +663,6 @@ function getExporter($strFormat, $streamtype = "RLE") {
     $path = RESOURCE_PATH . EXPORT_HANDLER . strtoupper($streamtype) . "2{$exporterSuffix}.php";
 
     return $path;
-}
-
-/**
- * Download url referenced images
- * convert to base64 and embed it to stream.
- *
- * @param  $stream Image stream
- *
- * @return Processed image stream
- */
-function downloadAndInsertEmbeddedImages($stream) {
-    $imageLinkRegex = '/([a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png|gif))/';
-
-    preg_match_all($imageLinkRegex, $stream, $matches);
-
-    $matches = $matches[0];
-
-    if (empty($matches)) {
-        return $stream;
-    }
-
-    $imageToBase64ConversionLiteral = array_map(function($match) {
-        return [
-          'url' => $match
-        ];
-    }, $matches);
-
-    $imageToBase64ConversionLiteral = squash($imageToBase64ConversionLiteral);
-
-    $imageToBase64ConversionLiteral = downloadImages($imageToBase64ConversionLiteral);
-
-    $imageToBase64ConversionLiteral = base64Embed($imageToBase64ConversionLiteral);
-
-    $processedStream = streamReplace($imageToBase64ConversionLiteral, $stream);
-
-    return $processedStream;
 }
 
 /**
