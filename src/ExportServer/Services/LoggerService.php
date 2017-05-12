@@ -31,20 +31,32 @@ class LoggerService
     {
         $this->makeConfig($userConfig);
 
-        $this->connection = new AMQPStreamConnection($this->config['host'], $this->config['port'], $this->config['username'], $this->config['password']);
+        try {
 
-        $this->channel = $this->connection->channel();
+            $this->connection = new AMQPStreamConnection($this->config['host'], $this->config['port'], $this->config['username'], $this->config['password']);
 
-        $this->channel->exchange_declare($this->config['exchange_name'], $this->config['exchange_type'], false, false, false);
+            $this->channel = $this->connection->channel();
+
+            $this->channel->exchange_declare($this->config['exchange_name'], $this->config['exchange_type'], false, false, false);
+
+        } catch (\Exception $e) {
+
+            $this->connection = NULL;
+
+        }
     }
 
     public function send()
     {
-        $msg = new AMQPMessage(json_encode($this->data));
+        if ($this->connection) {
 
-        $this->channel->basic_publish($msg, $this->config['exchange_name'], $this->config['binding_key']);
+            $msg = new AMQPMessage(json_encode($this->data));
 
-        $this->close();
+            $this->channel->basic_publish($msg, $this->config['exchange_name'], $this->config['binding_key']);
+
+            $this->close();
+
+        }
 
         return $this;
     }
