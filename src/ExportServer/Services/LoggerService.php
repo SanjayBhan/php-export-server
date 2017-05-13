@@ -29,7 +29,7 @@ class LoggerService
 
     public function __construct($userConfig = [])
     {
-        $this->makeConfig($userConfig);
+        $this->config = $this->makeConfig($this->defaultConfig, $userConfig);
 
         try {
 
@@ -54,6 +54,8 @@ class LoggerService
 
             $this->channel->basic_publish($msg, $this->config['exchange_name'], $this->config['binding_key']);
 
+            header('LOG_INITIATED: true');
+
             $this->close();
 
         }
@@ -72,8 +74,8 @@ class LoggerService
         $this->connection->close();
     }
 
-    private function makeConfig($userConfig)
+    private function makeConfig($defaultConfig, $userConfig)
     {
-        $this->config = array_merge($this->defaultConfig, $userConfig);
+        return array_merge($defaultConfig, $userConfig);
     }
 }
