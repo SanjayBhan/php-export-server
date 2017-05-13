@@ -52,7 +52,7 @@ class Exporter
 
         $headerService = $this->headerService;
 
-        include(dirname(__FILE__) . '/index.php');
+        include(dirname(__FILE__) . '/entry.php');
     }
 
     private function makeConfig($userConfig)
