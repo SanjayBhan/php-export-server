@@ -232,6 +232,8 @@ $headers = getallheaders();
 
 $exportData = parseExportRequestStream($exportRequestStream);
 
+$loggerService->setEnabled($exportData['log_enabled']);
+
 /**
  * Set the default log datas
  */
@@ -429,6 +431,17 @@ function parseExportRequestStream($exportRequestStream) {
     // get the encoded images if any And temporarily create them inside the the temp
     // folder
     $exportData ['encodedImageData'] = @$exportRequestStream ['encodedImgData'];
+
+    // Get the log enabled param
+    if (isset($exportRequestStream['log_enabled'])) {
+        if (is_bool($exportRequestStream['log_enabled'])) {
+            $exportData['log_enabled'] = $exportRequestStream['log_enabled'];
+        } else {
+            $exportData['log_enabled'] = $exportRequestStream['log_enabled'] === 'true';
+        }
+    } else {
+        $exportData['log_enabled'] = true;
+    }
 
     // return collected and processed data
     return $exportData;

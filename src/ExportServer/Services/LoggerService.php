@@ -27,6 +27,8 @@ class LoggerService
 
     protected $channel;
 
+    protected $isEnabled;
+
     public function __construct($userConfig = [])
     {
         $this->config = $this->makeConfig($this->defaultConfig, $userConfig);
@@ -48,7 +50,7 @@ class LoggerService
 
     public function send()
     {
-        if ($this->connection) {
+        if ($this->connection && $this->isEnabled) {
 
             $msg = new AMQPMessage(json_encode($this->data));
 
@@ -66,6 +68,11 @@ class LoggerService
     public function setData($key, $value)
     {
         $this->data[$key] = $value;
+    }
+
+    public function setEnabled($value)
+    {
+        $this->isEnabled = $value;
     }
 
     private function close()
