@@ -250,6 +250,7 @@ $loggerService->setData('userCountry', 'India');
 $loggerService->setData('chartIdentifier', 'Hash');
 $loggerService->setData('serverDateTime', date('Y-m-d H:i:s'));
 $loggerService->setData('exportAction', @$exportData['parameters']['configuredexportaction']);
+$loggerService->setData('version', @$exportRequestStream['version']);
 
 
 /**

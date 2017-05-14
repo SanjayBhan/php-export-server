@@ -24,6 +24,7 @@ class LogDataBuilder
             'chartIdentifier' => 'Hash',
             'serverDateTime' => date('Y-m-d H:i:s'),
             'exportAction' => @$params['exportAction'],
+            'version' => @$params['version'],
         ];
 
         $data = (object) $data;
