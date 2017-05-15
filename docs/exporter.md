@@ -7,7 +7,7 @@ This class handles the image exporting. It takes in the request and handles the 
 ### 1. First initialize the class
 
 ```php
-$exporter = new FCExportServer\Exporter($config);
+$exporter = new FCExportHandler\Exporter($config);
 ```
 
 You can pass in the different configurations here.
@@ -50,7 +50,7 @@ $config = [
     'binding_key' => 'log.info',
   ],
 
-  // Headers to add during the download response
+  // Headers to add when sending response
   // You can also add your custom headers here
   'headers' => [
     'Access-Control-Allow-Origin' => '*',

@@ -1,10 +1,10 @@
 <?php
 
-namespace FCExportServer;
+namespace FCExportHandler;
 
-use FCExportServer\Services\EmbedderService;
-use FCExportServer\Services\LoggerService;
-use FCExportServer\Services\HeaderService;
+use FCExportHandler\Services\EmbedderService;
+use FCExportHandler\Services\LoggerService;
+use FCExportHandler\Services\HeaderService;
 
 class Exporter
 {

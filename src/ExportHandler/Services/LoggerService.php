@@ -1,6 +1,6 @@
 <?php
 
-namespace FCExportServer\Services;
+namespace FCExportHandler\Services;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;

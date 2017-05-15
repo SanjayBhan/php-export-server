@@ -354,13 +354,12 @@ function convertRawImageDataToFile($exportData) {
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-
-        applyResponseHeaders($headerService->getConfig('headers'));
-
         ob_clean();
         ob_end_flush();
         print_r($exportData['stream']);
     }
+
+    applyResponseHeaders($headerService->getConfig('headers'));
 
     $loggerService->send();
 
@@ -724,6 +723,8 @@ function outputExportObject($exportObj, $exportParams) {
         }
     }
 
+    applyResponseHeaders($headerService->getConfig('headers'));
+
     $loggerService->send();
 
     if ($exportParams['download']) {
@@ -930,8 +931,6 @@ function setupDownload($exportFile, $exportType, $target = "_self") {
     // when target is other than self type is 'inline'
     // NOTE : you can comment this line in order to replace present window (_self) content with the image/PDF
     header('Content-Disposition: ' . ( strtolower($target == "_self") ? "attachment" : "inline" ) . '; filename="' . $exportFile . '.' . $ext . '"');
-
-    applyResponseHeaders($headerService->getConfig('headers'));
 
     // return exportSetting array. Ready should be set to download
     return array('ready' => 'download', "type" => $exportType);

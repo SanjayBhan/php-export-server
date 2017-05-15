@@ -7,7 +7,7 @@ It is the listener for logs sent through rabbitmq by exporter.
 ### 1. Initialize the class
 
 ```php
-$logListener = new FCExportServer\LogListener($config);
+$logListener = new FCExportHandler\LogListener($config);
 ```
 
 ### 2. Use the class

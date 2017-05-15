@@ -7,7 +7,7 @@ It is the data builder for formatting the log request, as all the required optio
 ### 1. Initialize the class
 
 ```php
-$logDataBuilder = new FCExportServer\LogDataBuilder();
+$logDataBuilder = new FCExportHandler\LogDataBuilder();
 ```
 
 ### 2. Use the class

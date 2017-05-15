@@ -1,6 +1,6 @@
 <?php
 
-namespace FCExportServer\Services;
+namespace FCExportHandler\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;

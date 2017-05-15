@@ -1,6 +1,6 @@
 <?php
 
-namespace FCExportServer;
+namespace FCExportHandler;
 
 class LogDataBuilder
 {
