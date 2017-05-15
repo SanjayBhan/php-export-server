@@ -710,6 +710,7 @@ function applyResponseHeaders($headers) {
  */
 function outputExportObject($exportObj, $exportParams) {
     global $loggerService;
+    global $headerService;
 
     $didWork = false;
 
@@ -913,8 +914,6 @@ function setupServer($exportFile, $exportType, $target = "_self") {
  *  @return     An array containing exportSettings and ready flag
  */
 function setupDownload($exportFile, $exportType, $target = "_self") {
-    global $headerService;
-
     $exportType = strtolower($exportType);
 
     // get mime type list parsing MIMETYPES constant declared in Export Resource PHP file
