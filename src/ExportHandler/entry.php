@@ -257,7 +257,9 @@ $loggerService->setData('version', @$exportRequestStream['version']);
  * If image is processed by the browser just do the minimal job and die
  */
 if($exportData['streamtype'] === "IMAGE-DATA") {
-    $exportObject = convertRawImageDataToFile($exportData);
+    convertRawImageDataToFile($exportData);
+
+    exit;
 }
 
 /**
@@ -336,17 +338,19 @@ function convertRawImageDataToFile($exportData) {
         }
     }
 
+    applyResponseHeaders($headerService->getConfig('headers'));
+
     if (strtolower($exportData['parameters']['save']) && ALLOW_SAVE) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
         $loggerService->setData('exportFileName', pathinfo($fileStatus['filepath'])['filename']);
 
-        print_r($fileStatus['filepath']);
-
         if ($fileStatus ['ready']) {
             file_put_contents($fileStatus['filepath'], $exportData['stream']);
         }
     }
+
+    $loggerService->send();
 
     if (strtolower($exportData['parameters']['download'])) {
         header('Content-type:' . $mime);
@@ -354,16 +358,9 @@ function convertRawImageDataToFile($exportData) {
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-        ob_clean();
-        ob_end_flush();
+        
         print_r($exportData['stream']);
     }
-
-    applyResponseHeaders($headerService->getConfig('headers'));
-
-    $loggerService->send();
-
-    exit;
 }
 
 /**
