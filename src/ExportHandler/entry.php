@@ -215,6 +215,8 @@ $notices = "";
 // ==                                processing                               ==
 // =============================================================================
 
+applyResponseHeaders($headerService->getConfig('headers'));
+
 /**
  * Retrieve export data from POST Request sent by chart
  * Parse the Request stream into export data readable by this script
@@ -256,7 +258,7 @@ $loggerService->setData('version', @$exportRequestStream['version']);
 /**
  * If image is processed by the browser just do the minimal job and die
  */
-if($exportData['streamtype'] === "IMAGE-DATA") {
+if ($exportData['streamtype'] === "IMAGE-DATA") {
     convertRawImageDataToFile($exportData);
 
     exit;
@@ -265,7 +267,7 @@ if($exportData['streamtype'] === "IMAGE-DATA") {
 /**
  * If encoded images are found we need to decode and save them in the temp folder.
  */
-if($exportData['encodedImageData'] && strtolower($exportData['parameters']["exportformat"]) != 'svg' ){
+if ($exportData['encodedImageData'] && strtolower($exportData['parameters']["exportformat"]) != 'svg' ){
     //createEmbeddedImages($exportData ['encodedImageData']);
     parseImageData( $exportData ['encodedImageData']);
 }
@@ -338,8 +340,6 @@ function convertRawImageDataToFile($exportData) {
         }
     }
 
-    applyResponseHeaders($headerService->getConfig('headers'));
-
     if (strtolower($exportData['parameters']['save']) && ALLOW_SAVE) {
         $fileStatus = setupServer($exportData['parameters']['exportfilename'], strtolower($exportData['parameters']['exportformat']), $target = "_self");
 
@@ -358,7 +358,7 @@ function convertRawImageDataToFile($exportData) {
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-        
+
         print_r($exportData['stream']);
     }
 }
@@ -720,8 +720,6 @@ function outputExportObject($exportObj, $exportParams) {
             $didWork = exportOutput($exportObj, $exportActionSettings, 1);
         }
     }
-
-    applyResponseHeaders($headerService->getConfig('headers'));
 
     $loggerService->send();
 
