@@ -136,8 +136,6 @@ define("EXTENSIONS", "jpg=jpg;jpeg=jpg;gif=gif;png=png;pdf=pdf;svg=svg");
 
 define('TEMP_PATH', dirname(__FILE__) . '/tmp/');
 define('BATIK_PATH', 'batik/batik-rasterizer.jar');
-define('INKSCAPE_PATH', '/usr/local/bin/inkscape');
-define('CONVERT_PATH', '/usr/local/bin/convert'); // imagemagic
 // =============================================================================
 // ==                             Public Functions                            ==
 // =============================================================================

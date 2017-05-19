@@ -63,12 +63,16 @@ class Exporter
     private function setServerConfig($userConfig)
     {
         $defaultConfig = [
+            'inkscape_path' => '/usr/local/bin/inkscape',
+            'convert_path' => '/usr/local/bin/convert',
             'save_path' => dirname(__FILE__) . '/ExportedImages/',
             'allow_save' => true
         ];
 
         $config = array_merge($defaultConfig, $userConfig);
 
+        define('INKSCAPE_PATH', $config['inkscape_path']);
+        define('CONVERT_PATH', $config['convert_path']);
         define('SAVE_PATH', $config['save_path']);
         define('ALLOW_SAVE', $config['allow_save']);
     }

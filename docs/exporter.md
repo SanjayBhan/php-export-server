@@ -30,6 +30,9 @@ The default options are shown below but you can change any of it and pass it to 
 $config = [
   // Options for the server
   'server' => [
+    // Provide the converter paths here
+    'inkscape_path' => '/usr/local/bin/inkscape',
+    'convert_path' => '/usr/local/bin/convert',
     // This is where the saved images will exist
     'save_path' => dirname(__FILE__) . '/ExportedImages/',
     // Allow saving to server
