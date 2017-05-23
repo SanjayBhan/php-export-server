@@ -266,10 +266,10 @@ if ($exportData['streamtype'] === "IMAGE-DATA") {
 
 /**
  * If encoded images are found we need to decode and save them in the temp folder.
+ * This is only for backward compatiblility of FusionCharts v 3.10.1 or less
  */
-if ($exportData['encodedImageData'] && strtolower($exportData['parameters']["exportformat"]) != 'svg' ){
-    //createEmbeddedImages($exportData ['encodedImageData']);
-    parseImageData( $exportData ['encodedImageData']);
+if ($exportData['encodedImageData']) {
+    $exportData['stream'] = embedEncodedImage($exportData['encodedImageData'], $exportData['stream']);
 }
 
 if (strtolower($exportData['streamtype']) === 'svg') {
@@ -529,15 +529,11 @@ function parseExportParams($strParams, $exportRequestStream = array()) {
  * @param $dataStr JSON formatted image data and its attrbutes.
  *
  */
-function parseImageData($dataStr){
-    $dataObj = json_decode($dataStr);
-    $images_to_save = array();
+function embedEncodedImage($encodedImageData, $stream){
+    $dataObj = json_decode($encodedImageData);
 
-    foreach ($dataObj as $key => $value) {
-        $image = $value;
-
+    foreach ($dataObj as $key => $image) {
         foreach ($image as $key => $value) {
-
             switch(strtolower($key)) {
                 case 'name':
                     $img_name = $value;
@@ -548,104 +544,19 @@ function parseImageData($dataStr){
                 case 'encodeddata':
                     $img_data = $value;
                     break;
-                case 'width':
-                    $img_width = $value;
-                    break;
-                case 'height':
-                    $img_height = $value;
-                    break;
                 default:
-                    #nothing to do
                     break;
             }
         }
-
-        $img_data = str_replace('data:image/'.$img_type.";base64,", '', $img_data);
-        $img_data = str_replace(' ', '+', $img_data);
-        $img_data = base64_decode($img_data);
 
         if(!$img_data){
             raise_error("Problem Decoding base64 String");
         }
 
-        $img_obj = (object)array(
-            'name' => $img_name,
-            'data' => $img_data,
-            'type' => $img_type
-        );
-
-        array_push($images_to_save, $img_obj);
+        $stream = str_replace('temp/' . $img_name . '.' . $img_type, $img_data, $stream);
     }
 
-    if(count($images_to_save) > 0) {
-        saveNextImage($images_to_save, 0);
-    }
-}
-
-/**
- * saveNextImage function sequentially gets the image data and
- * send for recreating the images.
- * @param  [type] $images  [description]
- * @param  [type] $counter [description]
- * @return [type]          [description]
- */
-function saveNextImage($images, $counter) {
-    if(isset($images[$counter])){
-        $img_name = $images[$counter]->name;
-        $img_type = $images[$counter]->type;
-        $img_data = $images[$counter]->data;
-        /* Even if image creation is very fast (Synchronous), we should
-           wait for the completion of one process, before invoking the
-           other. Hence, the following if and else is required.
-        */
-        if(saveEmbeddedImage($img_name, $img_type, $img_data, "temp")) {
-            /* For successful creation of the images moves to the
-              next image*/
-            $counter++;
-            saveNextImage($images, $counter);
-        }
-        else {
-            /*and for failure raise an error and then
-            check for the next image. */
-            raise_error("can not create file ". $img_name. "." .$img);
-            $counter++;
-            saveNextImage($images, $counter);
-        };
-    }
-}
-
-/**
- * saveEmbeddedImage takes all the required parameters to recreate the
- * encoded image at server.
- * @param  $name    the name of the image to be recreated
- * @param  $type    The type of the image to be recreated
- * @param  $data    The decoded binary data to save as the image
- * @param  $path    The relative path of the folder where the
- *                  image should be recreated. This is normally
- *                  the 'temp' folder.
- *
- * @return          Returns true for successful recreaion and false
- *                  for failure.
- */
-function saveEmbeddedImage($name, $type, $data, $path="temp"){
-    $resource = imagecreatefromstring($data);
-    $image_output_path = realpath($path) . "/" . $name . "." . $type;
-
-    if(!$resource){
-        raise_error("Image resource could not be created for " . $name);
-    }else{
-        if($type == 'png'){
-            imagealphablending($resource, false);
-            imagesavealpha($resource, true);
-
-            return imagepng($resource, $image_output_path, 9);
-        }else{
-            return imagejpeg($resource, $image_output_path, 100);
-        }
-
-    }
-    //Should free up memory.
-    imagedestroy($resource);
+    return $stream;
 }
 
 /**
