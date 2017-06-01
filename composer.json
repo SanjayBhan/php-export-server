@@ -1,0 +1,14 @@
+{
+    "name": "fusioncharts/php-export-handler",
+    "description": "PHP Export Handler for Fusioncharts",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "FCExportHandler\\": "src/ExportHandler"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^6.2",
+        "php-amqplib/php-amqplib": "^2.6"
+    }
+}
