@@ -49,9 +49,11 @@ http://www.imagemagick.org/
 Installation
 ============
 
-1. Place the files in the server folder from where the index.php can be accessed.
-2. Give write permission to the folder 'temp' and 'ExportedImages' (create if not there);
-3. If using older FusionCharts (< 3.11.0) or using older browser (IE < 10) install Inkscape and ImageMagick, check the path is same as the file inside Resources have.
+1. Place this directory somewhere in your project
+2. Setup a symlink via composer in your consuming project
+3. Use the library
+
+Class specific docs are in the `docs` dir.
 
 
 *********************************************************************************************
