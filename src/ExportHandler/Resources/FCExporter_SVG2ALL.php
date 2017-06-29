@@ -201,8 +201,8 @@ function exportProcessor($stream, $meta, $exportParams, $imageData=null) {
         //$command = "java -jar ". BATIK_PATH ." -m $mimeType $width $bg $tempInputSVGFile";
         $command = INKSCAPE_PATH . "$bg --without-gui {$tempInputSVGFile} --export-{$ext} $tempOutputFile {$size}";
 
-        //echo $command;exit;
         $output = shell_exec($command);
+        
         if ('jpg' == $ext2) {
             $comandJpg = CONVERT_PATH . " -quality 100 $tempOutputFile $tempOutputJpgFile";
             $tempOutputFile = $tempOutputJpgFile;
