@@ -243,11 +243,11 @@ $loggerService->setData('chartSubCaption', @$exportRequestStream['chart_sub_capt
 $loggerService->setData('isSingleExport', @$exportRequestStream['is_single_export']);
 $loggerService->setData('exportFileName', @$exportData['parameters']['exportfilename']);
 $loggerService->setData('exportFormat', strtolower(@$exportData['parameters']['exportformat']));
-$loggerService->setData('chartOriginUrl', @$headers['Origin']);
+$loggerService->setData('chartOriginUrl', getOriginUrl($headers));
 $loggerService->setData('userAgent', @$headers['User-Agent']);
 $loggerService->setData('isFullVersion', @$exportRequestStream['is_full_version']);
 $loggerService->setData('userTimeZone', @$exportRequestStream['user_time_zone']);
-$loggerService->setData('userIPAddress', $_SERVER['REMOTE_ADDR']);
+$loggerService->setData('userIPAddress', getRemoteAddr($headers));
 $loggerService->setData('userCountry', '');
 $loggerService->setData('chartIdentifier', '');
 $loggerService->setData('serverDateTime', date('Y-m-d H:i:s'));
@@ -875,6 +875,45 @@ function generateIntelligentFileId() {
             );
 
     return $UUID;
+}
+
+/**
+ * Gets the origin url from the headers
+ *
+ * @param  $headers
+ * @return string
+ */
+function getOriginUrl($headers)
+{
+    if (array_key_exists('Origin', $headers)) {
+        return $headers['Origin'];
+    }
+
+    if (array_key_exists('Referer', $headers)) {
+        return $headers['Referer'];
+    }
+
+    return '';
+}
+
+/**
+ * Gets the remote address from X-Real-IP if setup
+ * on a reverse proxy server or just use the remote address
+ *
+ * @param  $headers
+ * @return string
+ */
+function getRemoteAddr($headers)
+{
+    if (array_key_exists('X-Real-IP', $headers)) {
+        return $headers['X-Real-IP'];
+    }
+
+    if (array_key_exists('REMOTE_ADDR', $_SERVER)) {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    return '';
 }
 
 /**
