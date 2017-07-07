@@ -5,6 +5,7 @@ namespace FCExportHandler;
 use FCExportHandler\Services\EmbedderService;
 use FCExportHandler\Services\LoggerService;
 use FCExportHandler\Services\HeaderService;
+use FCExportHandler\Services\GeoLocatorService;
 
 class Exporter
 {
@@ -22,6 +23,8 @@ class Exporter
 
     protected $headerService;
 
+    protected $geoLocatorService;
+
     public function __construct($userConfig = [])
     {
         $this->makeConfig($userConfig);
@@ -33,6 +36,8 @@ class Exporter
         $this->loggerService = new LoggerService($this->config['logger']);
 
         $this->headerService = new HeaderService($this->config['headers']);
+
+        $this->geoLocatorService = new GeoLocatorService();
     }
 
     public function serve()
@@ -46,11 +51,15 @@ class Exporter
 
         global $headerService;
 
+        global $geoLocatorService;
+
         $embedderService = $this->embedderService;
 
         $loggerService = $this->loggerService;
 
         $headerService = $this->headerService;
+
+        $geoLocatorService = $this->geoLocatorService;
 
         include(dirname(__FILE__) . '/entry.php');
     }

@@ -2,11 +2,24 @@
 
 namespace FCExportHandler;
 
+use FCExportHandler\Services\GeoLocatorService;
+
 class LogDataBuilder
 {
+    protected $geoLocatorService;
+
+    public function __construct()
+    {
+        $this->geoLocatorService = new GeoLocatorService();
+    }
+
     public function build($params, $headers)
     {
         date_default_timezone_set('UTC');
+
+        $chartOriginUrl = $this->getOriginUrl($headers);
+        $userIPAddress = $this->getRemoteAddr($headers);
+        $userCountry = $this->geoLocatorService->locateIP($userIPAddress, 'country');
 
         $data = [
             'chartType' => @$params['chartType'],
@@ -15,12 +28,12 @@ class LogDataBuilder
             'isSingleExport' => @$params['isSingleExport'],
             'exportFileName' => @$params['exportFileName'],
             'exportFormat' => @$params['exportFormat'],
-            'chartOriginUrl' => $this->getOriginUrl($headers),
+            'chartOriginUrl' => $chartOriginUrl,
             'userAgent' => @$headers['user-agent'][0],
             'isFullVersion' => @$params['isFullVersion'],
             'userTimeZone' => @$params['userTimeZone'],
-            'userIPAddress' => $this->getRemoteAddr($headers),
-            'userCountry' => '',
+            'userIPAddress' => $userIPAddress,
+            'userCountry' => $userCountry,
             'chartIdentifier' => '',
             'serverDateTime' => date('Y-m-d H:i:s'),
             'exportAction' => @$params['exportAction'],

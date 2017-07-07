@@ -234,6 +234,10 @@ $exportData = parseExportRequestStream($exportRequestStream);
 
 $loggerService->setEnabled($exportData['log_enabled']);
 
+$chartOriginUrl = getOriginUrl($headers);
+$userIPAddress = getRemoteAddr($headers);
+$userCountry = $geoLocatorService->locateIP($userIPAddress, 'country');
+
 /**
  * Set the default log datas
  */
@@ -243,12 +247,12 @@ $loggerService->setData('chartSubCaption', @$exportRequestStream['chart_sub_capt
 $loggerService->setData('isSingleExport', @$exportRequestStream['is_single_export']);
 $loggerService->setData('exportFileName', @$exportData['parameters']['exportfilename']);
 $loggerService->setData('exportFormat', strtolower(@$exportData['parameters']['exportformat']));
-$loggerService->setData('chartOriginUrl', getOriginUrl($headers));
+$loggerService->setData('chartOriginUrl', $chartOriginUrl);
 $loggerService->setData('userAgent', @$headers['User-Agent']);
 $loggerService->setData('isFullVersion', @$exportRequestStream['is_full_version']);
 $loggerService->setData('userTimeZone', @$exportRequestStream['user_time_zone']);
-$loggerService->setData('userIPAddress', getRemoteAddr($headers));
-$loggerService->setData('userCountry', '');
+$loggerService->setData('userIPAddress', $userIPAddress);
+$loggerService->setData('userCountry', $userCountry);
 $loggerService->setData('chartIdentifier', '');
 $loggerService->setData('serverDateTime', date('Y-m-d H:i:s'));
 $loggerService->setData('exportAction', @$exportData['parameters']['configuredexportaction']);
