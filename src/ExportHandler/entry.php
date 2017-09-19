@@ -909,8 +909,8 @@ function getOriginUrl($headers)
  */
 function getRemoteAddr($headers)
 {
-    if (array_key_exists('X-Real-IP', $headers)) {
-        return $headers['X-Real-IP'];
+    if (array_key_exists('X-Forwarded-For', $headers)) {
+        return $headers['X-Forwarded-For'];
     }
 
     if (array_key_exists('REMOTE_ADDR', $_SERVER)) {

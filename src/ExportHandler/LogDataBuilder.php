@@ -60,8 +60,8 @@ class LogDataBuilder
 
     private function getRemoteAddr($headers)
     {
-        if (array_key_exists('x-real-ip', $headers)) {
-            return $headers['x-real-ip'][0];
+        if (array_key_exists('x-forwarded-for', $headers)) {
+            return $headers['x-forwarded-for'][0];
         }
 
         if (array_key_exists('REMOTE_ADDR', $_SERVER)) {
