@@ -62,5 +62,6 @@ License
 
 FUSIONCHARTS:
 
-Copyright (c) FusionCharts Technologies LLP
+=======
+Copyright (c) FusionCharts, Inc.
 License Information at http://www.fusioncharts.com/license
